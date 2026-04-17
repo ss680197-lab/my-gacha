@@ -6,25 +6,30 @@
     <title>BPY中壢母親節扭蛋機</title>
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background: #fff5f7; color: #444; padding: 20px; }
-        .container { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #ffcad4; }
+        .container { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #ffcad4; position: relative; }
         h1 { color: #d63384; font-size: 24px; margin-bottom: 10px; }
         .description { font-size: 14px; color: #666; line-height: 1.6; text-align: left; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #ffcad4; }
         .chance-count { font-size: 20px; font-weight: bold; color: #d63384; margin: 15px 0; padding: 10px; background: #ffeef2; border-radius: 50px; }
-        .machine { font-size: 100px; margin: 20px 0; transition: transform 0.1s; }
+        .machine { font-size: 100px; margin: 20px 0; }
         .shake { animation: shake 0.5s infinite; }
         @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 100% { transform: translate(0,0) rotate(0deg); } }
-        button { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4); width: 100%; }
-        button:disabled { background: #ccc !important; box-shadow: none !important; cursor: not-allowed; }
+        
+        /* 主要按鈕 */
+        .main-btn { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4); width: 100%; -webkit-appearance: none; }
+        .main-btn:disabled { background: #ccc !important; box-shadow: none !important; cursor: not-allowed; }
+        
         #result { margin-top: 25px; font-size: 18px; font-weight: bold; color: #d63384; white-space: pre-line; padding: 15px; border: 2px dashed #ffcad4; background: #fffafb; display: none; border-radius: 10px; }
         
-        /* 紀錄區樣式 */
         .history-section { margin-top: 30px; text-align: left; display: none; }
         .history-title { font-size: 16px; font-weight: bold; color: #d63384; border-bottom: 1px solid #ffcad4; padding-bottom: 5px; margin-bottom: 10px; }
         .history-item { font-size: 13px; padding: 8px; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; align-items: center; }
         .history-item span { color: #999; font-size: 11px; }
 
-        .admin-zone { margin-top: 50px; opacity: 0.2; font-size: 12px; padding: 10px; }
         .prize-list { text-align: left; font-size: 13px; color: #777; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; line-height: 1.5; }
+
+        /* 修正後的管理員區：改為較大、好點擊的透明按鈕 */
+        .admin-zone { margin-top: 40px; border-top: 1px solid #f9f9f9; padding-top: 20px; }
+        .admin-btn { background: none; border: 1px solid #eee; color: #ddd; padding: 5px 10px; border-radius: 5px; font-size: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -41,7 +46,7 @@
     
     <div id="machine-icon" class="machine">🎰</div>
     
-    <button id="draw-btn" onclick="startGacha()">開始扭蛋</button>
+    <button id="draw-btn" class="main-btn" onclick="startGacha()">開始扭蛋</button>
 
     <div id="result"></div>
 
@@ -60,8 +65,8 @@
     </div>
 
     <div class="admin-zone">
-        <span onclick="adminAddChance()">【管理員操作】</span> | 
-        <span onclick="clearHistory()">清除紀錄</span>
+        <button class="admin-btn" onclick="adminAddChance()">【管理員點數發放】</button>
+        <button class="admin-btn" onclick="clearHistory()">【清除紀錄】</button>
     </div>
 </div>
 
@@ -83,9 +88,14 @@
     function updateDisplay() {
         const btn = document.getElementById('draw-btn');
         document.getElementById('chance-text').innerText = currentChances;
-        btn.disabled = (currentChances <= 0);
-        if (currentChances <= 0) btn.innerText = "抽獎機會已用完";
-        else btn.innerText = "開始扭蛋";
+        
+        if (currentChances > 0) {
+            btn.disabled = false;
+            btn.innerText = "開始扭蛋";
+        } else {
+            btn.disabled = true;
+            btn.innerText = "抽獎機會已用完";
+        }
     }
 
     function renderHistory() {
@@ -98,7 +108,7 @@
                     <div>🎁 ${item.name}</div>
                     <span>${item.time}</span>
                 </div>
-            `).reverse().join(''); // 最新的排上面
+            `).reverse().join('');
         } else {
             section.style.display = 'none';
         }
@@ -123,7 +133,6 @@
             icon.classList.remove('shake');
             const prize = getPrize();
             
-            // 紀錄中獎資訊
             const now = new Date();
             const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
             history.push({ name: prize.name, time: timeStr });
@@ -154,4 +163,25 @@
                 currentChances += parseInt(num);
                 localStorage.setItem('bpyChances', currentChances);
                 updateDisplay();
-                alert("已成功增加 "
+                alert("已成功增加 " + num + " 次機會！");
+            }
+        } else if (password !== null) {
+            alert("授權碼錯誤");
+        }
+    }
+
+    function clearHistory() {
+        const password = prompt("清除紀錄請輸入授權碼：");
+        if (password === "8888") {
+            history = [];
+            localStorage.removeItem('bpyHistory');
+            renderHistory();
+            alert("紀錄已清除");
+        } else if (password !== null) {
+            alert("授權碼錯誤");
+        }
+    }
+</script>
+
+</body>
+</html>
