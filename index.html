@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>BPY中壢母親節扭蛋機</title>
+    <title>BPY中壢母親節扭蛋機-Vfinal</title>
     <style>
         :root { --main-pink: #ff8fa3; --dark-pink: #d63384; --bg-pink: #fff0f3; }
         body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background-color: var(--bg-pink); color: #5a5a5a; padding: 15px; margin: 0; }
         
-        /* 啟動遮罩：解決手機音效解鎖問題 */
-        #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main-pink); color: white; z-index: 5000; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
+        /* 啟動遮罩 */
+        #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main-pink); color: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
         
         .container { background: #fff; width: 100%; max-width: 420px; padding: 25px; border-radius: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); margin: 0 auto; border: 2px solid #fff; position: relative; }
         .music-ctrl { position: absolute; top: 15px; right: 20px; font-size: 20px; cursor: pointer; z-index: 100; background: #fff; border-radius: 50%; width: 35px; height: 35px; line-height: 35px; border: 1px solid #ffccd5; display: flex; align-items: center; justify-content: center; }
@@ -31,30 +31,27 @@
         @keyframes dialSpin { from { transform: rotate(0deg); } to { transform: rotate(1080deg); } }
         .dial-active { animation: dialSpin 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
 
-        /* 掉落扭蛋球 */
-        .real-egg { width: 55px; height: 55px; position: absolute; top: 180px; left: 83px; z-index: 200; display: none; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; }
+        /* 扭蛋球 */
+        .real-egg { width: 60px; height: 60px; position: absolute; top: 180px; left: 80px; z-index: 999; display: none; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; }
         @keyframes eggFall { 0% { transform: translateY(0); opacity: 0; } 100% { transform: translateY(115px); opacity: 1; } }
         .egg-active { display: block !important; animation: eggFall 0.8s forwards; }
-        .tip-text { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); color: var(--dark-pink); font-weight: bold; font-size: 14px; white-space: nowrap; animation: flash 1s infinite; }
-        @keyframes flash { 50% { opacity: 0.3; } }
-
+        
         .btn-draw { background: linear-gradient(#ff8fa3, #d63384); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; border-bottom: 5px solid #b32161; }
         .btn-draw:disabled { background: #eee; color: #aaa; border-bottom: none; }
 
         .history-list { font-size: 12px; color: #888; max-height: 80px; overflow-y: auto; background: #fffafb; padding: 10px; border-radius: 10px; border: 1px solid #ffccd5; text-align: left; }
-        .prize-detail { text-align: left; margin-top: 15px; padding: 12px; background: #fff; border-radius: 15px; font-size: 11px; color: #888; border: 1px solid #eee; }
-        .admin-footer { margin-top: 20px; display: flex; justify-content: space-around; font-size: 13px; color: #bbb; padding-bottom: 20px; }
+        .admin-footer { margin-top: 20px; display: flex; justify-content: space-around; font-size: 13px; color: #bbb; }
 
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; }
-        .modal { background: white; padding: 30px 20px; border-radius: 30px; width: 85%; border: 4px solid var(--main-pink); text-align: center; }
+        .modal { background: white; padding: 30px 20px; border-radius: 30px; width: 85%; border: 4px solid var(--main-pink); }
     </style>
 </head>
 <body>
 
 <div id="start-overlay" onclick="initApp()">
-    <div style="font-size: 50px; margin-bottom: 10px;">🌸</div>
-    <h2>點擊開啟扭蛋機</h2>
-    <p style="opacity: 0.8;">解鎖專屬音樂與音效</p>
+    <div style="font-size: 60px;">🌸</div>
+    <h2 style="margin:10px 0;">點擊進入扭蛋機</h2>
+    <p>啟動音樂與動畫</p>
 </div>
 
 <audio id="bgm" loop src="https://www.soundjay.com/free-music/pizzicato-01.mp3"></audio>
@@ -64,40 +61,25 @@
 <div class="container">
     <div id="music-btn" class="music-ctrl" onclick="toggleMusic(event)">🔇</div>
     <h1>BPY中壢母親節扭蛋機</h1>
-    <div class="promo-banner">凡於 <strong>5/1-5/31</strong> 消費滿 <strong>4 萬</strong> 獲扭蛋機會乙次，金額可累計。</div>
+    <div class="promo-banner">凡於 5/1-5/31 消費滿 4 萬獲扭蛋機會乙次。</div>
     <div class="chance-info">剩餘機會：<span id="chances">0</span> 次</div>
 
-    <div class="gacha-machine">
-        <div class="glass-dome" id="dome">
+    <div class="gacha-machine" id="machine-area">
+        <div class="glass-dome">
             <div class="deco-egg" style="background:#ff8fa3; top:120px; left:40px;"></div>
             <div class="deco-egg" style="background:#ffd6e0; top:110px; left:85px;"></div>
             <div class="deco-egg" style="background:#ffccd5; top:135px; left:110px;"></div>
-            <div class="deco-egg" style="background:#ff4d6d; top:105px; left:65px;"></div>
         </div>
         <div class="machine-base">
             <div id="dial" class="dial"></div>
             <div style="width:70px; height:40px; background:#333; position:absolute; bottom:-5px; left:50px; border-radius:10px 10px 0 0;"></div>
         </div>
-        <div id="egg" class="real-egg" onclick="openEgg()">
-            <div id="tip" class="tip-text">✨ 點我開蛋 ✨</div>
         </div>
-    </div>
 
     <button id="draw-btn" class="btn-draw" onclick="draw()">開始扭蛋</button>
 
-    <div style="text-align:left; margin-top:15px; font-size:14px; color:var(--dark-pink); font-weight:bold;">抽獎歷史紀錄</div>
+    <div style="text-align:left; margin-top:15px; font-size:14px; color:var(--dark-pink); font-weight:bold;">歷史紀錄</div>
     <div id="history-list" class="history-list">尚未有中獎紀錄</div>
-
-    <div class="prize-detail">
-        <h3 style="margin:0 0 5px 0; color:var(--dark-pink); font-size:13px;">活動獎項清單</h3>
-        <ol style="padding-left:15px; margin:0;">
-            <li>單堂 \$2500 皮拉提斯課程折抵券 (不限本人)</li>
-            <li>Indiba 體驗卷 15 分鐘 (限本人使用)</li>
-            <li>當次購課折抵單堂金額 50 元</li>
-            <li>單堂 \$2500 皮拉提斯課程折抵券兩張 (不限本人)</li>
-            <li>當下加贈四堂皮拉提斯課程 (限本人使用)</li>
-        </ol>
-    </div>
 
     <div class="admin-footer">
         <span onclick="addChances()">店家核銷碼</span>
@@ -107,13 +89,12 @@
 
 <div id="overlay">
     <div class="modal">
-        <div id="prize-text" style="font-size:18px; font-weight:bold; color:var(--dark-pink); margin-bottom:20px; white-space: pre-line;"></div>
-        <button onclick="closeModal()" style="background:var(--main-pink); color:white; border:none; padding:10px 25px; border-radius:20px; cursor:pointer;">收下驚喜 🌸</button>
+        <div id="prize-text" style="font-size:18px; font-weight:bold; color:var(--dark-pink); margin-bottom:20px; white-space:pre-line;"></div>
+        <button onclick="closeModal()" style="background:var(--main-pink); color:white; border:none; padding:10px 25px; border-radius:20px;">收下獎項 🌸</button>
     </div>
 </div>
 
 <script>
-    // 機率設定：前四項各約 24.5%，最後一項大獎 2%
     const prizes = [
         { name: "單堂 \$2500 皮拉提斯課程折抵券乙張\n(不限本人使用)", w: 24.5 },
         { name: "Indiba 體驗卷 15 分鐘乙張\n(限本人使用)", w: 24.5 },
@@ -125,14 +106,13 @@
     let chances = parseInt(localStorage.getItem('bpyChances')) || 0;
     let log = JSON.parse(localStorage.getItem('bpyLog')) || [];
     let currentPrize = null;
-    let isAnimating = false;
 
     function initApp() {
-        const audios = [document.getElementById('bgm'), document.getElementById('sfx-spin'), document.getElementById('sfx-pop')];
-        audios.forEach(a => {
-            a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+        // 強制解鎖音訊
+        [document.getElementById('bgm'), document.getElementById('sfx-spin'), document.getElementById('sfx-pop')].forEach(a => {
+            a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(()=>{});
         });
-        document.getElementById('start-overlay').style.display = 'none';
+        document.getElementById('start-overlay').remove(); // 徹底移除遮罩
         updateDisplay();
         updateHistory();
     }
@@ -140,86 +120,72 @@
     function toggleMusic(e) {
         e.stopPropagation();
         const bgm = document.getElementById('bgm');
-        const btn = document.getElementById('music-btn');
-        if (bgm.paused) { bgm.play(); btn.innerText = "🎵"; }
-        else { bgm.pause(); btn.innerText = "🔇"; }
+        document.getElementById('music-btn').innerText = bgm.paused ? (bgm.play(), "🎵") : (bgm.pause(), "🔇");
     }
 
     function updateDisplay() {
         document.getElementById('chances').innerText = chances;
-        document.getElementById('draw-btn').disabled = (chances <= 0 || isAnimating);
+        document.getElementById('draw-btn').disabled = (chances <= 0);
     }
 
     function updateHistory() {
         const list = document.getElementById('history-list');
-        if (log.length === 0) { list.innerHTML = "尚未有中獎紀錄"; return; }
-        list.innerHTML = log.slice().reverse().map(i => `<div>${i.time} - ${i.name.replace('\n', '')}</div>`).join('');
+        list.innerHTML = log.length ? log.slice().reverse().map(i => `<div>${i.time} - ${i.name.replace('\n', '')}</div>`).join('') : "尚未有中獎紀錄";
     }
 
     function draw() {
-        if (chances <= 0 || isAnimating) return;
-        isAnimating = true;
+        if (chances <= 0) return;
         chances--;
         localStorage.setItem('bpyChances', chances);
         
-        // 權重隨機算法
         const totalW = prizes.reduce((s, p) => s + p.w, 0);
-        let random = Math.random() * totalW;
-        for (const p of prizes) {
-            if (random < p.w) { currentPrize = p; break; }
-            random -= p.w;
-        }
+        let ran = Math.random() * totalW;
+        for (const p of prizes) { if (ran < p.w) { currentPrize = p; break; } ran -= p.w; }
 
         const dial = document.getElementById('dial');
-        const domeEggs = document.querySelectorAll('.deco-egg');
-        const egg = document.getElementById('egg');
-        const tip = document.getElementById('tip');
+        const decos = document.querySelectorAll('.deco-egg');
+        const btn = document.getElementById('draw-btn');
 
+        btn.disabled = true;
         document.getElementById('sfx-spin').play();
-        egg.style.display = 'none';
-        egg.classList.remove('egg-active');
-        egg.style.opacity = '1';
-        tip.style.display = 'none';
-
         dial.classList.add('dial-active');
-        domeEggs.forEach(e => e.classList.add('shuffling'));
+        decos.forEach(d => d.classList.add('shuffling'));
 
         setTimeout(() => {
             dial.classList.remove('dial-active');
-            domeEggs.forEach(e => e.classList.remove('shuffling'));
-            egg.style.display = 'block';
-            egg.classList.add('egg-active');
+            decos.forEach(d => d.classList.remove('shuffling'));
+            
+            // 這裡動態生成蛋，確保它是全新的
+            const egg = document.createElement('div');
+            egg.id = "active-egg";
+            egg.className = "real-egg egg-active";
+            egg.innerHTML = '<div style="position:absolute; bottom:-35px; left:50%; transform:translateX(-50%); color:var(--dark-pink); font-weight:bold; font-size:14px; white-space:nowrap;">✨ 點我開蛋 ✨</div>';
+            egg.onclick = openEgg;
+            document.getElementById('machine-area').appendChild(egg);
         }, 1200);
-
-        setTimeout(() => { tip.style.display = 'block'; }, 2000);
         updateDisplay();
     }
 
     function openEgg() {
         if (!currentPrize) return;
         document.getElementById('sfx-pop').play();
-
-        const egg = document.getElementById('egg');
-        const tip = document.getElementById('tip');
+        const egg = document.getElementById('active-egg');
         
         egg.style.transition = '0.3s';
         egg.style.transform = 'translateY(115px) scale(2)';
         egg.style.opacity = '0';
-        tip.style.display = 'none';
 
         const now = new Date();
-        const time = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-        log.push({ name: currentPrize.name, time: time });
+        log.push({ name: currentPrize.name, time: `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}` });
         localStorage.setItem('bpyLog', JSON.stringify(log));
 
         setTimeout(() => {
             document.getElementById('prize-text').innerText = "🎊 恭喜獲得 🎊\n" + currentPrize.name;
             document.getElementById('overlay').style.display = 'flex';
             
-            // 核心：移除蛋殼，重置狀態
-            egg.style.display = 'none'; 
-            egg.style.transform = 'translateY(0) scale(1)';
-            isAnimating = false;
+            // 重點：徹底移除蛋殼元素，保證不擋路
+            if(egg) egg.remove();
+            
             currentPrize = null;
             updateDisplay();
             updateHistory();
@@ -231,19 +197,16 @@
     }
 
     function addChances() {
-        if (prompt("店家核銷碼") === "8888") {
-            const n = parseInt(prompt("增加幾次抽獎機會？", "1") || 0);
-            chances += n;
+        if (prompt("核銷碼") === "8888") {
+            chances += parseInt(prompt("增加幾次？", "1") || 0);
             localStorage.setItem('bpyChances', chances);
             updateDisplay();
         }
     }
 
     function clearHistory() {
-        if (prompt("核銷管理碼") === "8888") {
-            if (confirm("確定清除紀錄與次數？")) {
-                localStorage.clear(); location.reload();
-            }
+        if (prompt("管理碼") === "8888") {
+            if (confirm("確定清空？")) { localStorage.clear(); location.reload(); }
         }
     }
 </script>
