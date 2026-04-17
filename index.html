@@ -3,60 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>店長特製扭蛋機</title>
+    <title>BPY中壢母親節扭蛋機</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding-top: 50px; }
-        .gacha-container { background: #fff; width: 300px; margin: 0 auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .machine { font-size: 80px; margin: 20px 0; transition: transform 0.1s; }
+        body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background: #fff5f7; color: #444; padding: 20px; }
+        .container { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #ffcad4; }
+        h1 { color: #d63384; font-size: 24px; margin-bottom: 10px; }
+        .description { font-size: 14px; color: #666; line-height: 1.6; text-align: left; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #ffcad4; }
+        .chance-count { font-size: 20px; font-weight: bold; color: #d63384; margin: 15px 0; padding: 10px; background: #ffeef2; border-radius: 50px; }
+        .machine { font-size: 100px; margin: 20px 0; cursor: pointer; transition: transform 0.1s; }
         .shake { animation: shake 0.5s infinite; }
-        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } 100% { transform: rotate(0deg); } }
-        button { background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 18px; cursor: pointer; }
-        button:disabled { background: #ccc; }
-        #result { margin-top: 20px; font-weight: bold; color: #2f3542; font-size: 20px; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } }
+        button { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4); }
+        button:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+        #result { margin-top: 25px; font-size: 18px; font-weight: bold; color: #d63384; white-space: pre-line; padding: 15px; border: 2px dashed #ffcad4; display: none; }
+        .admin-zone { margin-top: 50px; opacity: 0.3; font-size: 12px; }
+        .prize-list { text-align: left; font-size: 13px; color: #777; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="gacha-container">
-    <h2>🎁 限時扭蛋 🎁</h2>
+<div class="container">
+    <h1>BPY中壢母親節扭蛋機</h1>
+    
+    <div class="description">
+        <strong>活動說明：</strong><br>
+        凡於 5/1-5/31 期間於本店消費金額達到 4 萬，即可獲得扭蛋機會乙次。金額可累計，8 萬兩次以此類推。
+    </div>
+
+    <div class="chance-count">剩餘抽獎次數：<span id="chance-text">0</span> 次</div>
+    
     <div id="machine-icon" class="machine">🎰</div>
-    <button id="draw-btn" onclick="startGacha()">點我抽獎</button>
+    
+    <button id="draw-btn" onclick="startGacha()">開始扭蛋</button>
+
     <div id="result"></div>
+
+    <div class="prize-list">
+        <strong>獎項說明：</strong><br>
+        1. 單堂 $2500 皮拉提斯課程折抵券乙張：不限本人使用<br>
+        2. Indiba 體驗卷 15 分鐘乙張：限本人使用<br>
+        3. 當次購課折抵單堂金額 50 元<br>
+        4. 單堂 $2500 皮拉提斯課程折抵券兩張：不限本人使用<br>
+        5. 當下加贈四堂皮拉提斯課程：限本人使用
+    </div>
+
+    <div class="admin-zone">
+        <span onclick="adminAddChance()">【店員點數發放】</span>
+    </div>
 </div>
 
 <script>
-    // 設定獎項與機率
+    // 設定獎項（可自行調整權重）
     const prizes = [
-        { name: "一堂Indiba體驗券15分鐘", weight: 5 },
-        { name: "單堂課程$2500折抵乙次", weight: 20 },
-        { name: "下次購課折抵 1000 元", weight: 30 },
-        { name: "謝謝參與，再接再厲", weight: 45 }
+        { name: "單堂 $2500 皮拉提斯課程折抵券乙張\n(不限本人使用)", weight: 10 },
+        { name: "Indiba 體驗卷 15 分鐘乙張\n(限本人使用)", weight: 20 },
+        { name: "當次購課折抵單堂金額 50 元", weight: 50 },
+        { name: "單堂 $2500 皮拉提斯課程折抵券兩張\n(不限本人使用)", weight: 5 },
+        { name: "當下加贈四堂皮拉提斯課程\n(限本人使用)", weight: 5 }
     ];
 
-    // 檢查是否抽過獎
-    if (localStorage.getItem('hasDrawn')) {
-        document.getElementById('draw-btn').disabled = true;
-        document.getElementById('draw-btn').innerText = "已抽過獎囉";
-        document.getElementById('result').innerText = "每人僅限參與一次！";
+    // 初始化次數
+    let currentChances = parseInt(localStorage.getItem('bpyChances')) || 0;
+    updateDisplay();
+
+    function updateDisplay() {
+        document.getElementById('chance-text').innerText = currentChances;
+        document.getElementById('draw-btn').disabled = (currentChances <= 0);
     }
 
     function startGacha() {
+        if (currentChances <= 0) return;
+
         const btn = document.getElementById('draw-btn');
         const icon = document.getElementById('machine-icon');
         const resDiv = document.getElementById('result');
 
+        currentChances--;
+        localStorage.setItem('bpyChances', currentChances);
+        updateDisplay();
+
         btn.disabled = true;
+        resDiv.style.display = 'none';
         icon.classList.add('shake');
-        resDiv.innerText = "扭蛋中...";
 
         setTimeout(() => {
             icon.classList.remove('shake');
             const prize = getPrize();
-            resDiv.innerText = "恭喜獲得：\n" + prize.name;
-            
-            // 標記已抽過獎
-            localStorage.setItem('hasDrawn', 'true');
-        }, 2000);
+            resDiv.style.display = 'block';
+            resDiv.innerText = "🎊 恭喜獲獎 🎊\n" + prize.name;
+        }, 1500);
     }
 
     function getPrize() {
@@ -65,6 +100,22 @@
         for (const p of prizes) {
             if (random < p.weight) return p;
             random -= p.weight;
+        }
+    }
+
+    // 店員手動加次數
+    function adminAddChance() {
+        const password = prompt("請輸入店員授權碼：");
+        if (password === "8888") { // 你可以自行修改密碼
+            const num = prompt("要增加幾次抽獎機會？", "1");
+            if (num && !isNaN(num)) {
+                currentChances += parseInt(num);
+                localStorage.setItem('bpyChances', currentChances);
+                updateDisplay();
+                alert("已成功增加 " + num + " 次機會！");
+            }
+        } else {
+            alert("授權碼錯誤");
         }
     }
 </script>
