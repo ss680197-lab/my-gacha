@@ -9,24 +9,22 @@
         body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background-color: var(--bg-pink); color: #5a5a5a; padding: 15px; margin: 0; }
         .container { background: #fff; width: 100%; max-width: 420px; padding: 25px; border-radius: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); margin: 0 auto; border: 2px solid #fff; position: relative; }
         
-        /* 音樂切換按鈕 */
-        .music-ctrl { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; z-index: 100; background: #fff; border-radius: 50%; width: 40px; height: 40px; line-height: 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        /* 音樂開關按鈕 */
+        .music-ctrl { position: absolute; top: 15px; right: 20px; font-size: 20px; cursor: pointer; z-index: 100; background: #fff; border-radius: 50%; width: 35px; height: 35px; line-height: 35px; border: 1px solid #ffccd5; }
 
         h1 { color: var(--dark-pink); font-size: 22px; margin: 0 0 15px 0; }
         .promo-banner { background: #fffafb; border: 1px solid #ffccd5; border-radius: 15px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.6; color: #666; text-align: left; }
         .chance-info { font-size: 18px; font-weight: bold; color: var(--dark-pink); margin-bottom: 15px; background: #ffeef2; display: inline-block; padding: 5px 20px; border-radius: 50px; }
 
-        /* 扭蛋機核心動畫 */
+        /* 扭蛋機動畫區 */
         .gacha-machine { width: 220px; height: 320px; margin: 0 auto; position: relative; }
         .glass-dome { width: 180px; height: 180px; background: rgba(224, 247, 250, 0.4); border: 4px solid #f9f9f9; border-radius: 50%; position: absolute; top: 0; left: 20px; z-index: 5; overflow: hidden; }
-        .deco-egg { width: 32px; height: 32px; border-radius: 50%; position: absolute; box-shadow: inset -3px -3px 6px rgba(0,0,0,0.1); }
+        .deco-egg { width: 32px; height: 32px; border-radius: 50%; position: absolute; }
         
         @keyframes eggShuffle {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            20% { transform: translate(20px, -20px) rotate(45deg); }
-            40% { transform: translate(-15px, -30px) rotate(-90deg); }
-            60% { transform: translate(15px, 15px) rotate(180deg); }
-            100% { transform: translate(0, 0) rotate(360deg); }
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(15px, -15px) rotate(90deg); }
+            75% { transform: translate(-10px, 15px) rotate(270deg); }
         }
         .shuffling { animation: eggShuffle 0.15s infinite linear; }
 
@@ -35,8 +33,9 @@
         .dial::after { content: ''; width: 44px; height: 12px; background: var(--dark-pink); position: absolute; top: 21px; left: 5px; border-radius: 6px; }
         
         @keyframes dialSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(1080deg); } }
-        .dial-active { animation: dialSpin 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
+        .dial-active { animation: dialSpin 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
 
+        /* 扭蛋球 */
         .real-egg { width: 55px; height: 55px; position: absolute; top: 230px; left: 83px; z-index: 2; display: none; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; }
         @keyframes eggFall { 
             0% { transform: translateY(0) scale(0.5); opacity: 0; } 
@@ -48,22 +47,23 @@
         @keyframes flash { 50% { opacity: 0.3; } }
 
         .btn-draw { background: linear-gradient(#ff8fa3, #d63384); color: white; border: none; width: 100%; padding: 18px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-top: 15px; cursor: pointer; border-bottom: 5px solid #b32161; }
-        .btn-draw:disabled { background: #eee; color: #aaa; border-bottom: none; cursor: not-allowed; }
+        .btn-draw:disabled { background: #eee; color: #aaa; border-bottom: none; }
 
         .history-section { text-align: left; margin-top: 25px; border-top: 2px dashed #ffccd5; padding-top: 15px; }
         .history-list { font-size: 13px; color: #888; max-height: 120px; overflow-y: auto; background: #fffafb; padding: 10px; border-radius: 10px; border: 1px solid #ffccd5; }
         .prize-detail { text-align: left; margin-top: 20px; padding: 15px; background: #fff; border-radius: 15px; font-size: 12px; color: #888; border: 1px solid #eee; }
-        .admin-footer { margin-top: 25px; display: flex; justify-content: space-around; font-size: 14px; color: #bbb; }
+        .admin-footer { margin-top: 25px; display: flex; justify-content: space-around; font-size: 14px; color: #bbb; padding-bottom: 20px; }
         
+        /* 彈窗 */
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; justify-content: center; align-items: center; }
         .modal { background: white; padding: 40px 20px; border-radius: 30px; width: 85%; border: 4px solid var(--main-pink); text-align: center; }
     </style>
 </head>
 <body>
 
-<audio id="bgm" loop src="https://assets.mixkit.co/music/preview/mixkit-arcade-retro-changing-perspective-226.mp3"></audio>
-<audio id="sfx-spin" src="https://assets.mixkit.co/sfx/preview/mixkit-mechanical-clutter-snap-952.mp3"></audio>
-<audio id="sfx-pop" src="https://assets.mixkit.co/sfx/preview/mixkit-clapper-board-pop-871.mp3"></audio>
+<audio id="bgm" loop preload="auto" src="https://www.soundjay.com/free-music/pizzicato-01.mp3"></audio>
+<audio id="sfx-spin" preload="auto" src="https://www.soundjay.com/misc/sounds/mechanical-clanking-1.mp3"></audio>
+<audio id="sfx-pop" preload="auto" src="https://www.soundjay.com/misc/sounds/pop-1.mp3"></audio>
 
 <div class="container">
     <div id="music-btn" class="music-ctrl" onclick="toggleMusic()">🔇</div>
@@ -118,7 +118,7 @@
 <div id="overlay">
     <div class="modal">
         <div id="prize-text" style="font-size:20px; font-weight:bold; color:var(--dark-pink); margin-bottom:25px; line-height:1.5;"></div>
-        <button onclick="closeModal()" style="background:var(--main-pink); color:white; border:none; padding:12px 30px; border-radius:30px; font-size:16px;">收下驚喜 🌸</button>
+        <button onclick="closeModal()" style="background:var(--main-pink); color:white; border:none; padding:12px 30px; border-radius:30px; font-size:16px; cursor:pointer;">收下驚喜 🌸</button>
     </div>
 </div>
 
@@ -135,16 +135,16 @@
     let log = JSON.parse(localStorage.getItem('bpyLog')) || [];
     let currentPrize = null;
     let isEggOpened = false;
+    let audioUnlocked = false; // 音訊解鎖狀態
 
     updateDisplay();
     updateHistory();
 
-    // 音樂控制
     function toggleMusic() {
         const bgm = document.getElementById('bgm');
         const btn = document.getElementById('music-btn');
         if (bgm.paused) {
-            bgm.play();
+            bgm.play().catch(() => alert("請先點擊頁面任一處以解鎖音效"));
             btn.innerText = "🎵";
         } else {
             bgm.pause();
@@ -170,9 +170,20 @@
 
     function draw() {
         if (chances <= 0) return;
+        
+        // 第一次點擊時，解鎖瀏覽器音訊限制
+        if (!audioUnlocked) {
+            document.getElementById('sfx-spin').play().then(() => {
+                document.getElementById('sfx-spin').pause();
+                document.getElementById('sfx-pop').play().then(() => {
+                    document.getElementById('sfx-pop').pause();
+                    audioUnlocked = true;
+                });
+            });
+        }
+
         chances--;
         localStorage.setItem('bpyChances', chances);
-        
         currentPrize = prizes[Math.floor(Math.random() * prizes.length)];
         isEggOpened = false;
 
@@ -183,12 +194,13 @@
         const tip = document.getElementById('tip');
 
         // 播放轉動聲
+        document.getElementById('sfx-spin').currentTime = 0;
         document.getElementById('sfx-spin').play();
 
         btn.disabled = true;
         egg.style.display = 'none';
         egg.classList.remove('egg-active');
-        egg.style.opacity = '1';
+        egg.style.opacity = '1'; egg.style.transform = '';
         tip.style.display = 'none';
 
         dial.classList.add('dial-active');
@@ -198,9 +210,9 @@
             dial.classList.remove('dial-active');
             domeEggs.forEach(e => e.classList.remove('shuffling'));
             egg.classList.add('egg-active');
-        }, 1500);
+        }, 1200);
 
-        setTimeout(() => { tip.style.display = 'block'; }, 2400);
+        setTimeout(() => { tip.style.display = 'block'; }, 2000);
     }
 
     function openEgg() {
@@ -208,6 +220,7 @@
         isEggOpened = true; 
 
         // 播放開蛋聲
+        document.getElementById('sfx-pop').currentTime = 0;
         document.getElementById('sfx-pop').play();
 
         const egg = document.getElementById('egg');
@@ -226,12 +239,15 @@
         setTimeout(() => {
             document.getElementById('prize-text').innerText = "🎊 恭喜獲得 🎊\n" + currentPrize.name;
             document.getElementById('overlay').style.display = 'flex';
-            currentPrize = null; updateDisplay(); updateHistory();
+            currentPrize = null;
+            updateDisplay();
+            updateHistory();
         }, 300);
     }
 
     function closeModal() {
         document.getElementById('overlay').style.display = 'none';
+        // 修正：關閉視窗後徹底隱藏剛才那顆蛋，必須重新扭蛋
         document.getElementById('egg').style.display = 'none';
     }
 
@@ -245,8 +261,10 @@
     }
 
     function clearHistory() {
-        if (prompt("授權碼") === "8888") {
-            if (confirm("清空？")) { localStorage.clear(); location.reload(); }
+        if (prompt("管理碼") === "8888") {
+            if (confirm("確定清除紀錄與次數？")) {
+                localStorage.clear(); location.reload();
+            }
         }
     }
 </script>
