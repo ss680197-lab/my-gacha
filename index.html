@@ -10,7 +10,7 @@
         .container { background: #fff; width: 100%; max-width: 420px; padding: 25px; border-radius: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); margin: 0 auto; border: 2px solid #fff; position: relative; }
         
         /* 音樂開關按鈕 */
-        .music-ctrl { position: absolute; top: 15px; right: 20px; font-size: 20px; cursor: pointer; z-index: 100; background: #fff; border-radius: 50%; width: 35px; height: 35px; line-height: 35px; border: 1px solid #ffccd5; }
+        .music-ctrl { position: absolute; top: 15px; right: 20px; font-size: 20px; cursor: pointer; z-index: 100; background: #fff; border-radius: 50%; width: 35px; height: 35px; line-height: 35px; border: 1px solid #ffccd5; display: flex; align-items: center; justify-content: center; }
 
         h1 { color: var(--dark-pink); font-size: 22px; margin: 0 0 15px 0; }
         .promo-banner { background: #fffafb; border: 1px solid #ffccd5; border-radius: 15px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.6; color: #666; text-align: left; }
@@ -35,8 +35,14 @@
         @keyframes dialSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(1080deg); } }
         .dial-active { animation: dialSpin 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
 
-        /* 扭蛋球 */
-        .real-egg { width: 55px; height: 55px; position: absolute; top: 230px; left: 83px; z-index: 2; display: none; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; }
+        /* 扭蛋球實體 */
+        .real-egg { 
+            width: 55px; height: 55px; position: absolute; top: 230px; left: 83px; z-index: 20; 
+            display: none; border-radius: 50%; 
+            background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; 
+        }
+        
         @keyframes eggFall { 
             0% { transform: translateY(0) scale(0.5); opacity: 0; } 
             100% { transform: translateY(115px); opacity: 1; } 
@@ -46,7 +52,7 @@
         .tip-text { position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%); color: var(--dark-pink); font-weight: bold; font-size: 15px; white-space: nowrap; display: none; animation: flash 1s infinite; }
         @keyframes flash { 50% { opacity: 0.3; } }
 
-        .btn-draw { background: linear-gradient(#ff8fa3, #d63384); color: white; border: none; width: 100%; padding: 18px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-top: 15px; cursor: pointer; border-bottom: 5px solid #b32161; }
+        .btn-draw { background: linear-gradient(#ff8fa3, #d63384); color: white; border: none; width: 100%; padding: 18px; border-radius: 50px; font-size: 18px; font-weight: bold; margin-top: 15px; cursor: pointer; border-bottom: 5px solid #b32161; position: relative; z-index: 1; }
         .btn-draw:disabled { background: #eee; color: #aaa; border-bottom: none; }
 
         .history-section { text-align: left; margin-top: 25px; border-top: 2px dashed #ffccd5; padding-top: 15px; }
@@ -54,19 +60,16 @@
         .prize-detail { text-align: left; margin-top: 20px; padding: 15px; background: #fff; border-radius: 15px; font-size: 12px; color: #888; border: 1px solid #eee; }
         .admin-footer { margin-top: 25px; display: flex; justify-content: space-around; font-size: 14px; color: #bbb; padding-bottom: 20px; }
         
-        /* 彈窗 */
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; justify-content: center; align-items: center; }
         .modal { background: white; padding: 40px 20px; border-radius: 30px; width: 85%; border: 4px solid var(--main-pink); text-align: center; }
     </style>
 </head>
-<body>
-
-<audio id="bgm" loop preload="auto" src="https://www.soundjay.com/free-music/pizzicato-01.mp3"></audio>
+<body onclick="unlockAudio()"> <audio id="bgm" loop preload="auto" src="https://www.soundjay.com/free-music/pizzicato-01.mp3"></audio>
 <audio id="sfx-spin" preload="auto" src="https://www.soundjay.com/misc/sounds/mechanical-clanking-1.mp3"></audio>
 <audio id="sfx-pop" preload="auto" src="https://www.soundjay.com/misc/sounds/pop-1.mp3"></audio>
 
 <div class="container">
-    <div id="music-btn" class="music-ctrl" onclick="toggleMusic()">🔇</div>
+    <div id="music-btn" class="music-ctrl" onclick="toggleMusic(event)">🔇</div>
     <h1>BPY中壢母親節扭蛋機</h1>
     
     <div class="promo-banner">
@@ -118,7 +121,7 @@
 <div id="overlay">
     <div class="modal">
         <div id="prize-text" style="font-size:20px; font-weight:bold; color:var(--dark-pink); margin-bottom:25px; line-height:1.5;"></div>
-        <button onclick="closeModal()" style="background:var(--main-pink); color:white; border:none; padding:12px 30px; border-radius:30px; font-size:16px; cursor:pointer;">收下驚喜 🌸</button>
+        <button onclick="closeModal()" style="background:var(--main-pink); color:white; border:none; padding:12px 30px; border-radius:30px; font-size:16px;">收下驚喜 🌸</button>
     </div>
 </div>
 
@@ -135,16 +138,30 @@
     let log = JSON.parse(localStorage.getItem('bpyLog')) || [];
     let currentPrize = null;
     let isEggOpened = false;
-    let audioUnlocked = false; // 音訊解鎖狀態
+    let audioContextUnlocked = false;
 
     updateDisplay();
     updateHistory();
 
-    function toggleMusic() {
+    // 點擊頁面任何地方即解鎖所有音效權限
+    function unlockAudio() {
+        if (audioContextUnlocked) return;
+        const audios = [document.getElementById('bgm'), document.getElementById('sfx-spin'), document.getElementById('sfx-pop')];
+        audios.forEach(a => {
+            a.play().then(() => {
+                a.pause();
+                a.currentTime = 0;
+            }).catch(e => console.log("Audio unlock retry..."));
+        });
+        audioContextUnlocked = true;
+    }
+
+    function toggleMusic(e) {
+        e.stopPropagation(); // 防止觸發 unlockAudio 重置
         const bgm = document.getElementById('bgm');
         const btn = document.getElementById('music-btn');
         if (bgm.paused) {
-            bgm.play().catch(() => alert("請先點擊頁面任一處以解鎖音效"));
+            bgm.play();
             btn.innerText = "🎵";
         } else {
             bgm.pause();
@@ -170,17 +187,7 @@
 
     function draw() {
         if (chances <= 0) return;
-        
-        // 第一次點擊時，解鎖瀏覽器音訊限制
-        if (!audioUnlocked) {
-            document.getElementById('sfx-spin').play().then(() => {
-                document.getElementById('sfx-spin').pause();
-                document.getElementById('sfx-pop').play().then(() => {
-                    document.getElementById('sfx-pop').pause();
-                    audioUnlocked = true;
-                });
-            });
-        }
+        unlockAudio(); // 確保開始時再次嘗試解鎖
 
         chances--;
         localStorage.setItem('bpyChances', chances);
@@ -194,8 +201,9 @@
         const tip = document.getElementById('tip');
 
         // 播放轉動聲
-        document.getElementById('sfx-spin').currentTime = 0;
-        document.getElementById('sfx-spin').play();
+        const sfxSpin = document.getElementById('sfx-spin');
+        sfxSpin.currentTime = 0;
+        sfxSpin.play().catch(e => console.log("SFX play failed"));
 
         btn.disabled = true;
         egg.style.display = 'none';
@@ -220,8 +228,9 @@
         isEggOpened = true; 
 
         // 播放開蛋聲
-        document.getElementById('sfx-pop').currentTime = 0;
-        document.getElementById('sfx-pop').play();
+        const sfxPop = document.getElementById('sfx-pop');
+        sfxPop.currentTime = 0;
+        sfxPop.play();
 
         const egg = document.getElementById('egg');
         const tip = document.getElementById('tip');
@@ -237,6 +246,7 @@
         localStorage.setItem('bpyLog', JSON.stringify(log));
 
         setTimeout(() => {
+            egg.style.display = 'none';
             document.getElementById('prize-text').innerText = "🎊 恭喜獲得 🎊\n" + currentPrize.name;
             document.getElementById('overlay').style.display = 'flex';
             currentPrize = null;
@@ -247,8 +257,6 @@
 
     function closeModal() {
         document.getElementById('overlay').style.display = 'none';
-        // 修正：關閉視窗後徹底隱藏剛才那顆蛋，必須重新扭蛋
-        document.getElementById('egg').style.display = 'none';
     }
 
     function addChances() {
