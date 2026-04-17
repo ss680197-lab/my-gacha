@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>店長特製扭蛋機</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding-top: 50px; }
+        .gacha-container { background: #fff; width: 300px; margin: 0 auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .machine { font-size: 80px; margin: 20px 0; transition: transform 0.1s; }
+        .shake { animation: shake 0.5s infinite; }
+        @keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(10deg); } 75% { transform: rotate(-10deg); } 100% { transform: rotate(0deg); } }
+        button { background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-size: 18px; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        #result { margin-top: 20px; font-weight: bold; color: #2f3542; font-size: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="gacha-container">
+    <h2>🎁 限時扭蛋 🎁</h2>
+    <div id="machine-icon" class="machine">🎰</div>
+    <button id="draw-btn" onclick="startGacha()">點我抽獎</button>
+    <div id="result"></div>
+</div>
+
+<script>
+    // 設定獎項與機率
+    const prizes = [
+        { name: "一堂Indiba體驗券15分鐘", weight: 5 },
+        { name: "單堂課程$2500折抵乙次", weight: 20 },
+        { name: "下次購課折抵 1000 元", weight: 30 },
+        { name: "謝謝參與，再接再厲", weight: 45 }
+    ];
+
+    // 檢查是否抽過獎
+    if (localStorage.getItem('hasDrawn')) {
+        document.getElementById('draw-btn').disabled = true;
+        document.getElementById('draw-btn').innerText = "已抽過獎囉";
+        document.getElementById('result').innerText = "每人僅限參與一次！";
+    }
+
+    function startGacha() {
+        const btn = document.getElementById('draw-btn');
+        const icon = document.getElementById('machine-icon');
+        const resDiv = document.getElementById('result');
+
+        btn.disabled = true;
+        icon.classList.add('shake');
+        resDiv.innerText = "扭蛋中...";
+
+        setTimeout(() => {
+            icon.classList.remove('shake');
+            const prize = getPrize();
+            resDiv.innerText = "恭喜獲得：\n" + prize.name;
+            
+            // 標記已抽過獎
+            localStorage.setItem('hasDrawn', 'true');
+        }, 2000);
+    }
+
+    function getPrize() {
+        const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
+        let random = Math.random() * totalWeight;
+        for (const p of prizes) {
+            if (random < p.weight) return p;
+            random -= p.weight;
+        }
+    }
+</script>
+
+</body>
+</html>
