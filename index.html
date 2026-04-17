@@ -10,14 +10,14 @@
         h1 { color: #d63384; font-size: 24px; margin-bottom: 10px; }
         .description { font-size: 14px; color: #666; line-height: 1.6; text-align: left; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #ffcad4; }
         .chance-count { font-size: 20px; font-weight: bold; color: #d63384; margin: 15px 0; padding: 10px; background: #ffeef2; border-radius: 50px; }
-        .machine { font-size: 100px; margin: 20px 0; cursor: pointer; transition: transform 0.1s; }
+        .machine { font-size: 100px; margin: 20px 0; transition: transform 0.1s; }
         .shake { animation: shake 0.5s infinite; }
         @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } }
-        button { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4); }
-        button:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
-        #result { margin-top: 25px; font-size: 18px; font-weight: bold; color: #d63384; white-space: pre-line; padding: 15px; border: 2px dashed #ffcad4; display: none; }
-        .admin-zone { margin-top: 50px; opacity: 0.3; font-size: 12px; }
-        .prize-list { text-align: left; font-size: 13px; color: #777; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        button { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4); width: 100%; }
+        button:disabled { background: #ccc !important; box-shadow: none !important; cursor: not-allowed; }
+        #result { margin-top: 25px; font-size: 18px; font-weight: bold; color: #d63384; white-space: pre-line; padding: 15px; border: 2px dashed #ffcad4; background: #fffafb; display: none; }
+        .admin-zone { margin-top: 50px; opacity: 0.3; font-size: 12px; padding: 10px; }
+        .prize-list { text-align: left; font-size: 13px; color: #777; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -48,12 +48,11 @@
     </div>
 
     <div class="admin-zone">
-        <span onclick="adminAddChance()">【店員點數發放】</span>
+        <span onclick="adminAddChance()">【管理員操作】</span>
     </div>
 </div>
 
 <script>
-    // 設定獎項（可自行調整權重）
     const prizes = [
         { name: "單堂 $2500 皮拉提斯課程折抵券乙張\n(不限本人使用)", weight: 10 },
         { name: "Indiba 體驗卷 15 分鐘乙張\n(限本人使用)", weight: 20 },
@@ -62,13 +61,23 @@
         { name: "當下加贈四堂皮拉提斯課程\n(限本人使用)", weight: 5 }
     ];
 
-    // 初始化次數
     let currentChances = parseInt(localStorage.getItem('bpyChances')) || 0;
+    
+    // 初始化顯示
     updateDisplay();
 
     function updateDisplay() {
+        const btn = document.getElementById('draw-btn');
         document.getElementById('chance-text').innerText = currentChances;
-        document.getElementById('draw-btn').disabled = (currentChances <= 0);
+        
+        // 核心修正：判斷次數來決定按鈕是否啟用
+        if (currentChances > 0) {
+            btn.disabled = false;
+            btn.innerText = "開始扭蛋";
+        } else {
+            btn.disabled = true;
+            btn.innerText = "抽獎機會已用完";
+        }
     }
 
     function startGacha() {
@@ -78,19 +87,25 @@
         const icon = document.getElementById('machine-icon');
         const resDiv = document.getElementById('result');
 
+        // 1. 立即扣除次數並存檔
         currentChances--;
         localStorage.setItem('bpyChances', currentChances);
-        updateDisplay();
-
+        
+        // 2. 鎖定按鈕避免動畫中重複點擊
         btn.disabled = true;
+        btn.innerText = "扭蛋進行中...";
         resDiv.style.display = 'none';
         icon.classList.add('shake');
 
+        // 3. 動畫結束
         setTimeout(() => {
             icon.classList.remove('shake');
             const prize = getPrize();
             resDiv.style.display = 'block';
             resDiv.innerText = "🎊 恭喜獲獎 🎊\n" + prize.name;
+            
+            // 4. 關鍵修正：動畫結束後更新顯示，重新檢查剩餘次數決定是否開啟按鈕
+            updateDisplay();
         }, 1500);
     }
 
@@ -103,15 +118,14 @@
         }
     }
 
-    // 店員手動加次數
     function adminAddChance() {
-        const password = prompt("請輸入店員授權碼：");
-        if (password === "8888") { // 你可以自行修改密碼
+        const password = prompt("請輸入授權碼：");
+        if (password === "8888") {
             const num = prompt("要增加幾次抽獎機會？", "1");
             if (num && !isNaN(num)) {
                 currentChances += parseInt(num);
                 localStorage.setItem('bpyChances', currentChances);
-                updateDisplay();
+                updateDisplay(); // 增加後立即更新介面
                 alert("已成功增加 " + num + " 次機會！");
             }
         } else {
