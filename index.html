@@ -9,18 +9,13 @@
         :root { --main-pink: #ff8fa3; --dark-pink: #d63384; --bg-pink: #fff0f3; }
         body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background-color: var(--bg-pink); color: #5a5a5a; padding: 15px; margin: 0; }
         
-        /* 啟動遮罩 */
         #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main-pink); color: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
         
         .container { background: #fff; width: 100%; max-width: 420px; padding: 25px; border-radius: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); margin: 0 auto; border: 2px solid #fff; position: relative; }
         .music-ctrl { position: absolute; top: 15px; right: 20px; font-size: 20px; cursor: pointer; z-index: 100; background: #fff; border-radius: 50%; width: 35px; height: 35px; line-height: 35px; border: 1px solid #ffccd5; display: flex; align-items: center; justify-content: center; }
 
         h1 { color: var(--dark-pink); font-size: 20px; margin: 0 0 10px 0; }
-        
-        /* 活動說明看板 - 已更新文字 */
         .promo-banner { background: #fffafb; border: 1px solid #ffccd5; border-radius: 15px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.6; color: #666; text-align: left; }
-        .promo-banner strong { color: var(--dark-pink); }
-
         .chance-info { font-size: 18px; font-weight: bold; color: var(--dark-pink); margin-bottom: 10px; background: #ffeef2; display: inline-block; padding: 5px 20px; border-radius: 50px; }
 
         .gacha-machine { width: 220px; height: 300px; margin: 0 auto; position: relative; }
@@ -35,8 +30,7 @@
         @keyframes dialSpin { from { transform: rotate(0deg); } to { transform: rotate(1080deg); } }
         .dial-active { animation: dialSpin 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
 
-        /* 扭蛋球樣式 */
-        .real-egg { width: 60px; height: 60px; position: absolute; top: 180px; left: 80px; z-index: 999; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; }
+        .real-egg { width: 60px; height: 60px; position: absolute; top: 180px; left: 80px; z-index: 999; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
         @keyframes eggFall { 0% { transform: translateY(0); opacity: 0; } 100% { transform: translateY(115px); opacity: 1; } }
         .egg-active { animation: eggFall 0.8s forwards; }
         
@@ -98,7 +92,7 @@
 <div id="overlay">
     <div class="modal">
         <div id="prize-text" style="font-size:18px; font-weight:bold; color:var(--dark-pink); margin-bottom:20px; white-space:pre-line;"></div>
-        <button onclick="closeModal()" style="background:var(--main-pink); color:white; border:none; padding:10px 25px; border-radius:20px;">收下獎項 🌸</button>
+        <button onclick="closeModal()" style="background:var(--main-pink); color:white; border:none; padding:10px 25px; border-radius:20px; cursor:pointer;">收下獎項 🌸</button>
     </div>
 </div>
 
@@ -116,16 +110,11 @@
     let currentPrize = null;
 
     function initApp() {
-        // 全面初始化音訊
         const audios = [document.getElementById('bgm'), document.getElementById('sfx-spin'), document.getElementById('sfx-pop')];
         audios.forEach(a => {
-            a.load(); // 強制重新讀取
-            a.play().then(() => {
-                a.pause();
-                a.currentTime = 0;
-            }).catch(e => console.log("Audio play blocked"));
+            a.load();
+            a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(e => console.log("Init block"));
         });
-        
         document.getElementById('start-overlay').remove();
         updateDisplay();
         updateHistory();
@@ -135,13 +124,8 @@
         e.stopPropagation();
         const bgm = document.getElementById('bgm');
         const btn = document.getElementById('music-btn');
-        if (bgm.paused) {
-            bgm.play().catch(e => alert("請先點擊頁面以開啟聲音權限"));
-            btn.innerText = "🎵";
-        } else {
-            bgm.pause();
-            btn.innerText = "🔇";
-        }
+        if (bgm.paused) { bgm.play(); btn.innerText = "🎵"; }
+        else { bgm.pause(); btn.innerText = "🔇"; }
     }
 
     function updateDisplay() {
@@ -168,11 +152,7 @@
         const btn = document.getElementById('draw-btn');
 
         btn.disabled = true;
-        
-        const spinSfx = document.getElementById('sfx-spin');
-        spinSfx.currentTime = 0;
-        spinSfx.play().catch(()=>{});
-
+        document.getElementById('sfx-spin').play();
         dial.classList.add('dial-active');
         decos.forEach(d => d.classList.add('shuffling'));
 
@@ -180,25 +160,28 @@
             dial.classList.remove('dial-active');
             decos.forEach(d => d.classList.remove('shuffling'));
             
-            // 物理生成新蛋
             const egg = document.createElement('div');
             egg.id = "active-egg";
             egg.className = "real-egg egg-active";
-            egg.innerHTML = '<div style="position:absolute; bottom:-35px; left:50%; transform:translateX(-50%); color:var(--dark-pink); font-weight:bold; font-size:14px; white-space:nowrap;">✨ 點我開蛋 ✨</div>';
-            egg.onclick = openEgg;
             document.getElementById('machine-area').appendChild(egg);
+            
+            // --- 重點：掉落 0.8s 後自動觸發開蛋 ---
+            setTimeout(() => {
+                autoOpenEgg();
+            }, 800);
+            
         }, 1200);
         updateDisplay();
     }
 
-    function openEgg() {
+    // --- 自動開蛋函數 ---
+    function autoOpenEgg() {
         if (!currentPrize) return;
         
-        const popSfx = document.getElementById('sfx-pop');
-        popSfx.currentTime = 0;
-        popSfx.play().catch(()=>{});
-
+        document.getElementById('sfx-pop').play();
         const egg = document.getElementById('active-egg');
+        
+        // 播放動畫
         egg.style.transition = '0.3s';
         egg.style.transform = 'translateY(115px) scale(2)';
         egg.style.opacity = '0';
@@ -211,13 +194,13 @@
             document.getElementById('prize-text').innerText = "🎊 恭喜獲得 🎊\n" + currentPrize.name;
             document.getElementById('overlay').style.display = 'flex';
             
-            // 物理刪除蛋殼節點，絕不殘留
+            // 物理刪除蛋殼節點
             if(egg) egg.remove();
             
             currentPrize = null;
             updateDisplay();
             updateHistory();
-        }, 400);
+        }, 300);
     }
 
     function closeModal() {
@@ -239,7 +222,7 @@
     function clearHistory() {
         const pw = prompt("管理碼");
         if (pw === "8888") {
-            if (confirm("確定清空紀錄與次數？")) { localStorage.clear(); location.reload(); }
+            if (confirm("確定清空？")) { localStorage.clear(); location.reload(); }
         }
     }
 </script>
