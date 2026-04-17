@@ -7,20 +7,32 @@
     <title>BPY中壢店-母親節扭蛋機</title>
     <style>
         :root { --main-pink: #ff8fa3; --dark-pink: #d63384; --bg-pink: #fff0f3; }
-        body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background-color: var(--bg-pink); color: #5a5a5a; padding: 15px; margin: 0; }
+        body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background-color: var(--bg-pink); color: #5a5a5a; padding: 15px; margin: 0; overflow-x: hidden; }
         
+        /* 啟動遮罩：強制互動以解鎖手機音效 */
         #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main-pink); color: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
         
         .container { background: #fff; width: 100%; max-width: 420px; padding: 25px; border-radius: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); margin: 0 auto; border: 2px solid #fff; position: relative; }
-        .music-ctrl { position: absolute; top: 15px; right: 20px; font-size: 20px; cursor: pointer; z-index: 100; background: #fff; border-radius: 50%; width: 35px; height: 35px; line-height: 35px; border: 1px solid #ffccd5; display: flex; align-items: center; justify-content: center; }
+        .music-ctrl { position: absolute; top: 15px; right: 20px; font-size: 20px; cursor: pointer; z-index: 100; background: #fff; border-radius: 50%; width: 35px; height: 35px; border: 1px solid #ffccd5; display: flex; align-items: center; justify-content: center; }
 
         h1 { color: var(--dark-pink); font-size: 20px; margin: 0 0 10px 0; }
         .promo-banner { background: #fffafb; border: 1px solid #ffccd5; border-radius: 15px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.6; color: #666; text-align: left; }
         .chance-info { font-size: 18px; font-weight: bold; color: var(--dark-pink); margin-bottom: 10px; background: #ffeef2; display: inline-block; padding: 5px 20px; border-radius: 50px; }
 
+        /* 扭蛋機視覺區 */
         .gacha-machine { width: 220px; height: 300px; margin: 0 auto; position: relative; }
-        .glass-dome { width: 180px; height: 180px; background: rgba(224, 247, 250, 0.4); border: 4px solid #f9f9f9; border-radius: 50%; position: absolute; top: 0; left: 20px; z-index: 5; overflow: hidden; }
-        .deco-egg { width: 32px; height: 32px; border-radius: 50%; position: absolute; }
+        
+        /* 強化版圓框櫥窗 */
+        .glass-dome { 
+            width: 180px; height: 180px; 
+            background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.8) 0%, rgba(224, 247, 250, 0.3) 40%, rgba(128, 222, 234, 0.2) 100%);
+            border: 2px solid rgba(128, 222, 234, 0.5);
+            outline: 3px solid rgba(249, 249, 249, 0.8);
+            border-radius: 50%; position: absolute; top: 0; left: 20px; z-index: 5; overflow: hidden; 
+            box-shadow: inset 0 0 20px rgba(128, 222, 234, 0.2);
+        }
+        
+        .deco-egg { width: 32px; height: 32px; border-radius: 50%; position: absolute; box-shadow: inset -2px -2px 5px rgba(0,0,0,0.15); }
         @keyframes eggShuffle { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(12px, -12px); } 75% { transform: translate(-12px, 12px); } }
         .shuffling { animation: eggShuffle 0.1s infinite linear; }
 
@@ -30,15 +42,18 @@
         @keyframes dialSpin { from { transform: rotate(0deg); } to { transform: rotate(1080deg); } }
         .dial-active { animation: dialSpin 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
 
-        .real-egg { width: 60px; height: 60px; position: absolute; top: 180px; left: 80px; z-index: 999; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        /* 扭蛋球產生區 (完全與按鈕層級分離) */
+        #egg-drop-zone { position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 90; pointer-events: none; }
+        .real-egg { width: 60px; height: 60px; position: absolute; top: 180px; left: 80px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
         @keyframes eggFall { 0% { transform: translateY(0); opacity: 0; } 100% { transform: translateY(115px); opacity: 1; } }
         .egg-active { animation: eggFall 0.8s forwards; }
         
-        .btn-draw { background: linear-gradient(#ff8fa3, #d63384); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; border-bottom: 5px solid #b32161; }
+        .btn-draw { background: linear-gradient(#ff8fa3, #d63384); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; border-bottom: 5px solid #b32161; position: relative; z-index: 200; }
         .btn-draw:disabled { background: #eee; color: #aaa; border-bottom: none; }
 
         .history-list { font-size: 12px; color: #888; max-height: 80px; overflow-y: auto; background: #fffafb; padding: 10px; border-radius: 10px; border: 1px solid #ffccd5; text-align: left; }
-        .admin-footer { margin-top: 20px; display: flex; justify-content: space-around; font-size: 13px; color: #bbb; }
+        .prize-detail { text-align: left; margin-top: 15px; padding: 12px; background: #fff; border-radius: 15px; font-size: 11px; color: #888; border: 1px solid #eee; }
+        .admin-footer { margin-top: 20px; display: flex; justify-content: space-around; font-size: 13px; color: #bbb; padding-bottom: 20px; }
 
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; }
         .modal { background: white; padding: 30px 20px; border-radius: 30px; width: 85%; border: 4px solid var(--main-pink); }
@@ -47,41 +62,46 @@
 <body>
 
 <div id="start-overlay" onclick="initApp()">
-    <div style="font-size: 60px;">🌸</div>
-    <h2 style="margin:10px 0;">點擊進入扭蛋機</h2>
+    <div style="font-size: 60px; margin-bottom: 10px;">🌸</div>
+    <h2>點擊開啟扭蛋機</h2>
     <p>啟動活動音效與動畫</p>
 </div>
 
-<audio id="bgm" loop src="https://pixabay.com/music/download/144577/?force=true"></audio>
+<audio id="bgm" loop src="https://cdn.pixabay.com/audio/2022/02/22/audio_d0c6ff1adb.mp3"></audio>
 <audio id="sfx-spin" src="https://cdn.pixabay.com/audio/2022/03/10/audio_515764d0c9.mp3"></audio>
 <audio id="sfx-pop" src="https://cdn.pixabay.com/audio/2022/03/15/audio_7838cf0722.mp3"></audio>
 
 <div class="container">
     <div id="music-btn" class="music-ctrl" onclick="toggleMusic(event)">🔇</div>
     <h1>BPY中壢母親節扭蛋機</h1>
-    
-    <div class="promo-banner">
-        凡於 <strong>5/1-5/31</strong>期間消費金額達 <strong>4 萬</strong>，即可獲得扭蛋機會乙次。金額可累計，8 萬兩次以此類推。
-    </div>
-
+    <div class="promo-banner">凡於 <strong>5/1-5/31</strong>期間消費金額達 <strong>4 萬</strong>，即可獲得扭蛋機會乙次。金額可累計，8 萬兩次以此類推。</div>
     <div class="chance-info">剩餘機會：<span id="chances">0</span> 次</div>
 
-    <div class="gacha-machine" id="machine-area">
+    <div class="gacha-machine">
         <div class="glass-dome">
             <div class="deco-egg" style="background:#ff8fa3; top:120px; left:40px;"></div>
             <div class="deco-egg" style="background:#ffd6e0; top:110px; left:85px;"></div>
             <div class="deco-egg" style="background:#ffccd5; top:135px; left:110px;"></div>
         </div>
-        <div class="machine-base">
-            <div id="dial" class="dial"></div>
-            <div style="width:70px; height:40px; background:#333; position:absolute; bottom:-5px; left:50px; border-radius:10px 10px 0 0;"></div>
-        </div>
+        <div class="machine-base"><div id="dial" class="dial"></div><div style="width:70px; height:40px; background:#333; position:absolute; bottom:-5px; left:50px; border-radius:10px 10px 0 0;"></div></div>
+        <div id="egg-drop-zone"></div>
     </div>
 
     <button id="draw-btn" class="btn-draw" onclick="draw()">開始扭蛋</button>
 
     <div style="text-align:left; margin-top:15px; font-size:14px; color:var(--dark-pink); font-weight:bold;">歷史紀錄</div>
     <div id="history-list" class="history-list">尚未有中獎紀錄</div>
+
+    <div class="prize-detail">
+        <h3 style="margin:0 0 5px 0; color:var(--dark-pink); font-size:13px;">活動獎項清單</h3>
+        <ol style="padding-left:15px; margin:0;">
+            <li>單堂 $2500 皮拉提斯課程折抵券 (不限本人)</li>
+            <li>Indiba 體驗卷 15 分鐘 (限本人)</li>
+            <li>當次購課折抵單堂金額 50 元</li>
+            <li>單堂 $2500 皮拉提斯課程折抵券兩張 (不限本人)</li>
+            <li>當下加贈四堂皮拉提斯課程 (限本人)</li>
+        </ol>
+    </div>
 
     <div class="admin-footer">
         <span onclick="addChances()">店家核銷碼</span>
@@ -98,23 +118,21 @@
 
 <script>
     const prizes = [
-        { name: "單堂 \$2500 皮拉提斯課程折抵券乙張\n(不限本人使用)", w: 24.5 },
+        { name: "單堂 $2500 皮拉提斯課程折抵券乙張\n(不限本人使用)", w: 24.5 },
         { name: "Indiba 體驗卷 15 分鐘乙張\n(限本人使用)", w: 24.5 },
         { name: "當次購課折抵單堂金額 50 元", w: 24.5 },
-        { name: "單堂 \$2500 皮拉提斯課程折抵券兩張\n(不限本人使用)", w: 24.5 },
+        { name: "單堂 $2500 皮拉提斯課程折抵券兩張\n(不限本人使用)", w: 24.5 },
         { name: "當下加贈四堂皮拉提斯課程\n(限本人使用)", w: 2 }
     ];
 
     let chances = parseInt(localStorage.getItem('bpyChances')) || 0;
     let log = JSON.parse(localStorage.getItem('bpyLog')) || [];
     let currentPrize = null;
+    let isAnimating = false;
 
     function initApp() {
-        const audios = [document.getElementById('bgm'), document.getElementById('sfx-spin'), document.getElementById('sfx-pop')];
-        audios.forEach(a => {
-            a.load();
-            a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(e => console.log("Init block"));
-        });
+        const bgm = document.getElementById('bgm');
+        bgm.play().then(() => { document.getElementById('music-btn').innerText = "🎵"; }).catch(()=>{});
         document.getElementById('start-overlay').remove();
         updateDisplay();
         updateHistory();
@@ -123,23 +141,22 @@
     function toggleMusic(e) {
         e.stopPropagation();
         const bgm = document.getElementById('bgm');
-        const btn = document.getElementById('music-btn');
-        if (bgm.paused) { bgm.play(); btn.innerText = "🎵"; }
-        else { bgm.pause(); btn.innerText = "🔇"; }
+        document.getElementById('music-btn').innerText = bgm.paused ? (bgm.play(), "🎵") : (bgm.pause(), "🔇");
     }
 
     function updateDisplay() {
         document.getElementById('chances').innerText = chances;
-        document.getElementById('draw-btn').disabled = (chances <= 0);
+        document.getElementById('draw-btn').disabled = (chances <= 0 || isAnimating);
     }
 
     function updateHistory() {
         const list = document.getElementById('history-list');
-        list.innerHTML = log.length ? log.slice().reverse().map(i => `<div>${i.time} - ${i.name.replace('\n', '')}</div>`).join('') : "尚未有中獎紀錄";
+        list.innerHTML = log.length ? log.slice().reverse().map(i => `<div>${i.time} - ${(i.name || i.n || "").replace('\n', '')}</div>`).join('') : "尚未有中獎紀錄";
     }
 
     function draw() {
-        if (chances <= 0) return;
+        if (chances <= 0 || isAnimating) return;
+        isAnimating = true;
         chances--;
         localStorage.setItem('bpyChances', chances);
         
@@ -149,10 +166,10 @@
 
         const dial = document.getElementById('dial');
         const decos = document.querySelectorAll('.deco-egg');
-        const btn = document.getElementById('draw-btn');
+        
+        document.getElementById('sfx-spin').currentTime = 0;
+        document.getElementById('sfx-spin').play().catch(()=>{});
 
-        btn.disabled = true;
-        document.getElementById('sfx-spin').play();
         dial.classList.add('dial-active');
         decos.forEach(d => d.classList.add('shuffling'));
 
@@ -160,28 +177,22 @@
             dial.classList.remove('dial-active');
             decos.forEach(d => d.classList.remove('shuffling'));
             
-            const egg = document.createElement('div');
-            egg.id = "active-egg";
-            egg.className = "real-egg egg-active";
-            document.getElementById('machine-area').appendChild(egg);
+            // 物理產生蛋球
+            const zone = document.getElementById('egg-drop-zone');
+            zone.innerHTML = '<div id="active-egg" class="real-egg egg-active"></div>';
             
-            // --- 重點：掉落 0.8s 後自動觸發開蛋 ---
-            setTimeout(() => {
-                autoOpenEgg();
-            }, 800);
-            
+            // 蛋掉下後 0.8s 自動啟動開蛋
+            setTimeout(() => { autoOpenEgg(); }, 800);
         }, 1200);
         updateDisplay();
     }
 
-    // --- 自動開蛋函數 ---
     function autoOpenEgg() {
         if (!currentPrize) return;
-        
-        document.getElementById('sfx-pop').play();
+        document.getElementById('sfx-pop').currentTime = 0;
+        document.getElementById('sfx-pop').play().catch(()=>{});
+
         const egg = document.getElementById('active-egg');
-        
-        // 播放動畫
         egg.style.transition = '0.3s';
         egg.style.transform = 'translateY(115px) scale(2)';
         egg.style.opacity = '0';
@@ -194,34 +205,27 @@
             document.getElementById('prize-text').innerText = "🎊 恭喜獲得 🎊\n" + currentPrize.name;
             document.getElementById('overlay').style.display = 'flex';
             
-            // 物理刪除蛋殼節點
-            if(egg) egg.remove();
+            // --- 核心暴力清空：清空容器，絕不殘留 ---
+            document.getElementById('egg-drop-zone').innerHTML = '';
             
+            isAnimating = false;
             currentPrize = null;
             updateDisplay();
             updateHistory();
         }, 300);
     }
 
-    function closeModal() {
-        document.getElementById('overlay').style.display = 'none';
-    }
+    function closeModal() { document.getElementById('overlay').style.display = 'none'; }
 
     function addChances() {
-        const pw = prompt("核銷碼");
-        if (pw === "8888") {
+        if (prompt("核銷碼") === "8888") {
             const val = prompt("增加幾次？", "1");
-            if(val) {
-                chances += parseInt(val);
-                localStorage.setItem('bpyChances', chances);
-                updateDisplay();
-            }
+            if(val) { chances += parseInt(val); localStorage.setItem('bpyChances', chances); updateDisplay(); }
         }
     }
 
     function clearHistory() {
-        const pw = prompt("管理碼");
-        if (pw === "8888") {
+        if (prompt("管理碼") === "8888") {
             if (confirm("確定清空？")) { localStorage.clear(); location.reload(); }
         }
     }
