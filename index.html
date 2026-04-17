@@ -5,136 +5,152 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BPY中壢母親節扭蛋機</title>
     <style>
-        body { font-family: "Microsoft JhengHei", "Heiti TC", sans-serif; text-align: center; background-color: #fff0f3; color: #5a5a5a; padding: 20px; margin: 0; padding-bottom: 50px; }
-        .container { background: #fff; max-width: 420px; margin: 0 auto; padding: 25px; border-radius: 30px; box-shadow: 0 10px 30px rgba(214, 51, 132, 0.1); border: 3px solid #ffccd5; position: relative; }
+        :root { --main-pink: #ff8fa3; --dark-pink: #d63384; --bg-pink: #fff0f3; }
+        body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background-color: var(--bg-pink); color: #5a5a5a; padding: 20px; margin: 0; overflow-x: hidden; }
+        .container { background: #fff; max-width: 400px; margin: 0 auto; padding: 25px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 2px solid #ffccd5; position: relative; }
         
-        h1 { color: #d63384; font-size: 22px; margin-bottom: 5px; text-shadow: 1px 1px 0 #fff; }
-        .sub-title { font-size: 12px; color: #ff8fa3; margin-bottom: 15px; letter-spacing: 1px; }
+        h1 { color: var(--dark-pink); font-size: 20px; margin: 0; }
+        .sub-title { font-size: 11px; color: var(--main-pink); margin-bottom: 15px; letter-spacing: 2px; }
 
-        .description { font-size: 13px; color: #777; line-height: 1.6; text-align: left; background: #fffafb; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px dashed #ffcad4; }
-        .chance-count { font-size: 18px; font-weight: bold; color: #fff; margin: 15px auto; padding: 8px 20px; background: linear-gradient(135deg, #ff8fa3 0%, #ffb3c1 100%); border-radius: 50px; display: inline-block; box-shadow: 0 4px 10px rgba(255, 143, 163, 0.3); }
+        /* 扭蛋機構造 */
+        .gacha-machine { width: 220px; height: 350px; margin: 0 auto; position: relative; }
         
-        /* 扭蛋機舞台 */
-        .gacha-stage { position: relative; width: 220px; height: 320px; margin: 10px auto; /* border: 1px solid #ccc; /* 偵錯用 */ }
-        
-        /* 扭蛋機主體 */
-        .machine-container { width: 200px; height: 260px; position: absolute; bottom: 60px; left: 10px; z-index: 10; }
-        .machine-img { width: 100%; height: auto; position: absolute; bottom: 0; left: 0; }
-        /* 機器轉軸 (會旋轉的部分) */
-        .machine-rotor { width: 60px; height: 60px; position: absolute; bottom: 63px; left: 70px; z-index: 11; transition: transform 0.5s ease-in-out; }
-
-        /* 掉落的扭蛋 */
-        .dropped-ball { width: 50px; height: 50px; position: absolute; z-index: 5; display: none; cursor: pointer; opacity: 0; /* 初始隱藏 */ }
-        .dropped-ball:hover { transform: scale(1.1); }
-        
-        /* 提示文字：點擊開蛋 */
-        .click-tip { position: absolute; bottom: -25px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #d63384; background: #fff; padding: 2px 8px; border-radius: 10px; border: 1px solid #ffcad4; display: none; white-space: nowrap; }
-
-        /* --- 新增動畫效果 --- */
-        
-        /* 1. 轉軸旋轉 */
-        .rotorRotate { animation: rotorRotate 0.8s ease-in-out; }
-        @keyframes rotorRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* 2. 機器反彈 (蛋掉出瞬間) */
-        .machineBounce { animation: machineBounce 0.4s ease-out 0.6s; /* 延遲 0.6s 觸發 */ }
-        @keyframes machineBounce { 0% { transform: scale(1); } 50% { transform: scale(1.03) translateY(-3px); } 100% { transform: scale(1); } }
-
-        /* 3. 蛋掉落與彈跳動畫 (核心) */
-        .ballDropAndBounce { display: block; animation: ballDropAndBounce 1.2s ease-out 0.8s forwards; /* 延遲 0.8s 觸發 */ }
-        @keyframes ballDropAndBounce { 
-            0% { top: 150px; left: 85px; transform: scale(0.3) rotate(0deg); opacity: 0; } /* 從機器出口內部開始 */
-            10% { opacity: 1; transform: scale(1) rotate(0deg); }
-            30% { top: 260px; left: 85px; transform: rotate(180deg); } /* 第一次落地 (舞台底部) */
-            50% { top: 220px; left: 95px; transform: rotate(270deg); } /* 第一次彈起 */
-            70% { top: 260px; left: 105px; transform: rotate(360deg); } /* 第二次落地 */
-            85% { top: 250px; left: 110px; transform: rotate(380deg); } /* 第二次彈起 (微幅) */
-            100% { top: 260px; left: 115px; transform: rotate(360deg); opacity: 1; } /* 最終停靠位置 */
+        /* 頂部圓形透明櫥窗 */
+        .glass-dome { 
+            width: 180px; height: 180px; 
+            background: rgba(224, 247, 250, 0.6); 
+            border: 4px solid #f0f0f0;
+            border-radius: 50%; 
+            position: absolute; top: 0; left: 20px; 
+            z-index: 5;
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
         }
-        
-        /* 4. 蛋被點擊後的放大消失動畫 */
-        .ballOpen { animation: ballOpen 0.5s ease-out forwards; }
-        @keyframes ballOpen { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.5; } 100% { transform: scale(1.5); opacity: 0; } }
+        /* 櫥窗內的小裝飾球 */
+        .deco-egg { width: 30px; height: 30px; border-radius: 50%; position: absolute; opacity: 0.8; }
 
-        /* 按鈕：與原本相同 */
-        .main-btn { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color: white; border: none; padding: 12px 30px; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4); width: 100%; -webkit-appearance: none; border-bottom: 4px solid #e65c73; margin-top: 10px; }
-        .main-btn:active { transform: translateY(2px); border-bottom: 2px solid #e65c73; }
-        .main-btn:disabled { background: #ffccd5 !important; color: #ff8fa3 !important; border-bottom: 4px solid #ffb3c1 !important; box-shadow: none !important; opacity: 0.8; }
-        
-        /* 結果視窗：手動開蛋後才顯示 */
-        #result-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
-        #result-content { background: white; padding: 30px; border-radius: 20px; border: 3px solid #ffcad4; position: relative; transform: scale(0.8); transition: transform 0.3s; text-align: center; max-width: 80%; }
-        #result-overlay.show { display: flex; opacity: 1; }
-        #result-overlay.show #result-content { transform: scale(1); }
+        /* 機器下半部 (底座) */
+        .machine-base { 
+            width: 170px; height: 160px; 
+            background: #ff4d6d; 
+            border: 4px solid var(--dark-pink);
+            border-radius: 10px 10px 20px 20px;
+            position: absolute; bottom: 30px; left: 25px;
+            z-index: 10;
+        }
 
-        #result-text { font-size: 18px; font-weight: bold; color: #d63384; white-space: pre-line; margin-bottom: 20px; line-height: 1.5; }
-        #close-result-btn { background: #ff7ea3; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; }
-        
-        /* 紀錄區與其他 */
-        .history-section { margin-top: 30px; text-align: left; display: none; background: #fffafb; padding: 15px; border-radius: 15px; border: 1px solid #ffccd5; }
-        .history-title { font-size: 15px; font-weight: bold; color: #d63384; border-bottom: 2px solid #ffcad4; padding-bottom: 5px; margin-bottom: 10px; display: flex; align-items: center; }
-        .history-item { font-size: 12px; padding: 8px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; align-items: center; }
-        .prize-list { text-align: left; font-size: 12px; color: #888; margin-top: 25px; border-top: 1px solid #f0f0f0; padding: 15px; background: #fff; border-radius: 10px; }
-        .admin-zone { margin-top: 40px; border-top: 1px solid #f9f9f9; padding-top: 20px; opacity: 0.3; }
-        .admin-btn { background: none; border: 1px solid #eee; color: #ccc; padding: 4px 8px; border-radius: 5px; font-size: 9px; cursor: pointer; }
+        /* 旋轉鈕 */
+        .dial { 
+            width: 60px; height: 60px; background: #fff; 
+            border: 5px solid var(--dark-pink); border-radius: 50%;
+            position: absolute; top: 30px; left: 55px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .dial::after { content: ''; width: 40px; height: 10px; background: var(--dark-pink); border-radius: 5px; }
+        .dial-spin { animation: dialSpin 0.8s ease-in-out; }
+        @keyframes dialSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* 出蛋口 */
+        .exit-hole { 
+            width: 70px; height: 50px; background: #444; 
+            position: absolute; bottom: -10px; left: 50px;
+            border-radius: 10px 10px 0 0;
+            box-shadow: inset 0 5px 10px #000;
+        }
+
+        /* --- 掉落的立體扭蛋球 --- */
+        .real-egg {
+            width: 55px; height: 55px;
+            position: absolute;
+            top: 230px; left: 83px; /* 初始在機器內部 */
+            z-index: 2; /* 在底座後面掉下來 */
+            display: none;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #ffccd5 45%, #ff8fa3 85%);
+            box-shadow: inset -4px -4px 10px rgba(0,0,0,0.2), 0 5px 15px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        /* 蛋的中間接縫線 */
+        .real-egg::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(0,0,0,0.1); }
+
+        /* 掉落動畫 */
+        .egg-fall {
+            display: block !important;
+            animation: eggFall 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes eggFall {
+            0% { transform: translateY(0) scale(0.6); opacity: 0; }
+            20% { opacity: 1; transform: translateY(20px) scale(1); }
+            50% { transform: translateY(115px) rotate(180deg); } /* 落地 */
+            70% { transform: translateY(95px) rotate(270deg); }  /* 彈起 */
+            100% { transform: translateY(115px) rotate(360deg); opacity: 1; } /* 停在正中央 */
+        }
+
+        .click-me { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); color: var(--dark-pink); font-weight: bold; font-size: 14px; white-space: nowrap; display: none; }
+
+        /* 按鈕與介面 */
+        .btn-draw { 
+            background: linear-gradient(to bottom, #ff8fa3, #d63384); 
+            color: white; border: none; width: 100%; padding: 15px; 
+            border-radius: 50px; font-size: 18px; font-weight: bold; 
+            margin-top: 20px; box-shadow: 0 5px 15px rgba(214, 51, 132, 0.3);
+            cursor: pointer;
+        }
+        .btn-draw:disabled { background: #ccc; box-shadow: none; }
+
+        /* 結果與紀錄 */
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; }
+        .modal { background: white; padding: 30px; border-radius: 25px; width: 80%; border: 4px solid var(--main-pink); }
+        .history { margin-top: 20px; text-align: left; font-size: 13px; display: none; background: #fffafb; padding: 10px; border-radius: 15px; border: 1px solid #ffccd5; }
+        .admin { margin-top: 40px; opacity: 0.1; font-size: 9px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>BPY中壢母親節扭蛋機</h1>
-    <div class="sub-title">~ Happy Mother's Day ~</div>
+    <div class="sub-title">Happy Mother's Day</div>
     
-    <div class="description">
-        <strong>🌸 活動說明：</strong><br>
-        凡於 5/1-5/31 期間於本店消費金額達到 4 萬，即可獲得扭蛋機會乙次。金額可累計，8 萬兩次以此類推。
+    <div style="font-size: 16px; font-weight: bold; color: var(--dark-pink); margin-bottom: 10px;">
+        剩餘次數：<span id="chances">0</span> 回
     </div>
 
-    <div class="chance-count">剩餘次數：<span id="chance-text">0</span> 回</div>
-    
-    <div class="gacha-stage">
-        <div class="machine-container" id="machine-container">
-            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjYwIj48ZGVmcz48c3R5bGU+LmFjLTF7ZmlsbDojZDYzMzg0fS5hYy0ye2ZpbGw6I2ZmY2NkN30uYWMtM3tmaWxsOiNmZmNmZTR9LmFjLTR7ZmlsbDojZmZkYmU5fS5hYy01{ZmlsbDojZmY4ZmEzfS5hYy02{ZmlsbDojZmZiY2QxfTwvc3R5bGU+PC9kZWZzPjxwYXRoIGNsYXNzPSJhYy0xIiBkPSJNMTcwIDI2MEgzMGEyMCAyMCAwIDAgMS0yMC0yMFY5MGgxNjB2MTUwYTIwIDIwIDAgMCAxLTIwIDIweiIvPjxwYXRoIGNsYXNzPSJhYy0yIiBkPSJNMTYwIDI1MEg0MGExMCAxMCAwIDAgMS0xMC0xMFYxMDBoMTQwdjE0MGExMCAxMCAwIDAgMS0xMCAxMHoiLz48cGF0aCBjbGFzcz0iYWMtMyIgZD0iTTE4MCA5MEgyMFY1MGgxNjB6Ii8+PHBhdGggY2xhc3M9ImFjLTEiIGQ9Ik0xNjAgNTBINDBWMjhoMTIweiIvPjxwYXRoIGNsYXNzPSJhYy00IiBkPSJNMTQwIDExMEg2MFY4MEgxNDB6Ii8+PHBhdGggZD0iTTE4MCA5MEgyMFY1MGgxNjB6IiBmaWxsPSdub25lJyBzdHJva2U9J2ZmM2MxJyBzdHJva2Utd2lkdGg9JzInLz48L3N2Zz4=" class="machine-img" alt="扭蛋機">
-            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCI+PGRlZnM+PHN0eWxlPi5hci0xe2ZpbGw6I2Q2MzM4NH0uYXItMntmaWxsOiNmZjhmYTN9LmFyLTN7ZmlsbDojZmZiY2QxfTwvc3R5bGU+PC9kZWZzPjxjaXJjbGUgY2xhc3M9ImFyLTEiIGN4PSI0MCIgY3k9IjQwIiByPSI0MCIvPjxjaXJjbGUgY2xhc3M9ImFyLTIiIGN4PSI0MCIgY3k9IjQwIiByPSIzMCIvPjxjaXJjbGUgY2xhc3M9ImFyLTMiIGN4PSI0MCIgY3k9IjQwIiByPSIxNSIvPjxpathIGQ9Ik00MCAxMGEzMCAzMCAwIDAgMSAyNS45OCAxNUg1NC42NEAzMCAzMCAwIDAgMCA0MCA3MGEzMCAzMCAwIDAgMCAyNS45OC0xNWgxNC42NEEzMCAzMCAwIDAgMSA0MCAxMHoiIGZpbGw9IiNmZmNjZDV9Ii8+PC9zdmc+" class="machine-rotor" id="machine-rotor" alt="轉軸">
+    <div class="gacha-machine">
+        <div class="glass-dome">
+            <div class="deco-egg" style="background:#ff8fa3; bottom:5px; left:20px;"></div>
+            <div class="deco-egg" style="background:#ffd6e0; bottom:10px; left:50px;"></div>
+            <div class="deco-egg" style="background:#ffccd5; bottom:5px; left:90px;"></div>
+            <div class="deco-egg" style="background:#ff4d6d; bottom:15px; left:120px;"></div>
         </div>
-        
-        <div class="dropped-ball" id="dropped-ball" onclick="openBall()">
-            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MCA4MCI+PGRlZnM+PHN0eWxlPi5hbC0xe2ZpbGw6I2ZmYjNjMX0uYWwtMntmaWxsOiNmZmNjZDV9PC9zdHlsZT48L2RlZnM+PGNpcmNsZSBjbGFzcz0iYWwtMSIgY3g9IjQwIiBjeT0iNDAiIHI9IjM1Ii8+PHBhdGggY2xhc3M9ImFsLTIiIGQ9Ik00MCA1YTM1IDM1IDAgMCAwIDAgNzB6Ii8+PHBhdGggZD0iTTQwIDVhMzUgMzUgMCAwIDAgMCA villainsIIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2Q2MzM4NCIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+" style="width:100%; height:100%;" alt="蛋">
-            <div class="click-tip" id="click-tip">👇 點擊開蛋 👇</div>
-        </div>
-    </div>
-    
-    <button id="draw-btn" class="main-btn" onclick="startGacha()">ガシャを回す (開始扭蛋)</button>
 
-    <div id="result-overlay">
-        <div id="result-content">
-            <div id="result-text"></div>
-            <button id="close-result-btn" onclick="closeResult()">收下獎項 🌸</button>
+        <div class="machine-base">
+            <div id="dial" class="dial"></div>
+            <div class="exit-hole"></div>
+        </div>
+
+        <div id="egg" class="real-egg" onclick="openEgg()">
+            <div id="tip" class="click-me">🌸 點我開蛋 🌸</div>
         </div>
     </div>
 
-    <div id="history-section" class="history-section">
-        <div class="history-title">📜 我的獲獎紀錄</div>
-        <div id="history-list"></div>
+    <button id="draw-btn" class="btn-draw" onclick="draw()">扭轉母親節驚喜</button>
+
+    <div id="overlay">
+        <div class="modal">
+            <div id="prize-text" style="font-size:20px; font-weight:bold; color:var(--dark-pink); margin-bottom:20px;"></div>
+            <button onclick="closeModal()" style="background:var(--main-pink); color:white; border:none; padding:10px 25px; border-radius:20px;">收下驚喜 🌸</button>
+        </div>
     </div>
 
-    <div class="prize-list">
-        <strong>🌸 獎項說明：</strong>
-        1. 單堂 $2500 皮拉提斯課程折抵券乙張：不限本人使用<br>
-        2. Indiba 體驗卷 15 分鐘乙張：限本人使用<br>
-        3. 當次購課折抵單堂金額 50 元<br>
-        4. 單堂 $2500 皮拉提斯課程折抵券兩張：不限本人使用<br>
-        5. 當下加贈四堂皮拉提斯課程：限本人使用
+    <div id="history" class="history">
+        <strong>📜 獲獎紀錄</strong>
+        <div id="history-content" style="margin-top:5px;"></div>
     </div>
 
-    <div class="admin-zone">
-        <button class="admin-btn" onclick="adminAddChance()">【管理員點數發放】</button>
-        <button class="admin-btn" onclick="clearHistory()">【清除紀錄】</button>
-    </div>
+    <div class="admin" onclick="addChance()">Manager Panel</div>
 </div>
 
 <script>
-    // 獎項設定不變
     const prizes = [
         { name: "單堂 $2500 皮拉提斯課程折抵券乙張", weight: 10 },
         { name: "Indiba 體驗卷 15 分鐘乙張", weight: 20 },
@@ -143,151 +159,86 @@
         { name: "當下加贈四堂皮拉提斯課程", weight: 5 }
     ];
 
-    let currentChances = parseInt(localStorage.getItem('bpyChances')) || 0;
-    let history = JSON.parse(localStorage.getItem('bpyHistory')) || [];
-    let currentPrize = null; // 暫存當次抽到的獎
-    
-    updateDisplay();
-    renderHistory();
+    let chances = parseInt(localStorage.getItem('bpyChances')) || 0;
+    let log = JSON.parse(localStorage.getItem('bpyLog')) || [];
+    let currentPrize = null;
 
-    function updateDisplay() {
-        const btn = document.getElementById('draw-btn');
-        document.getElementById('chance-text').innerText = currentChances;
-        
-        if (currentChances > 0) {
-            btn.disabled = false;
-            btn.innerText = "ガシャを回す (開始扭蛋)";
-        } else {
-            btn.disabled = true;
-            btn.innerText = "抽獎機會已用完";
+    update();
+
+    function update() {
+        document.getElementById('chances').innerText = chances;
+        document.getElementById('draw-btn').disabled = chances <= 0;
+        if (log.length > 0) {
+            document.getElementById('history').style.display = 'block';
+            document.getElementById('history-content').innerHTML = log.map(i => 
+                `<div style="border-bottom:1px dashed #eee; padding:5px 0;">🎁 ${i.name} <br><small style="color:#bbb">${i.date}</small></div>`
+            ).reverse().join('');
         }
     }
 
-    function renderHistory() {
-        const section = document.getElementById('history-section');
-        const list = document.getElementById('history-list');
-        if (history.length > 0) {
-            section.style.display = 'block';
-            list.innerHTML = history.map(item => `
-                <div class="history-item">
-                    <div>🎁 ${item.name}</div>
-                    <span>${item.time}</span>
-                </div>
-            `).reverse().join('');
-        } else {
-            section.style.display = 'none';
-        }
-    }
-
-    // 1. 開始扭蛋：播放機器與掉蛋動畫
-    function startGacha() {
-        if (currentChances <= 0) return;
-
-        const btn = document.getElementById('draw-btn');
-        const rotor = document.getElementById('machine-rotor');
-        const machine = document.getElementById('machine-container');
-        const ball = document.getElementById('dropped-ball');
-        const tip = document.getElementById('click-tip');
-
-        // 預先抽好獎項，暫存起來
-        currentPrize = getPrize();
-
-        // 扣除次數
-        currentChances--;
-        localStorage.setItem('bpyChances', currentChances);
-        updateDisplay();
+    function draw() {
+        if (chances <= 0) return;
+        chances--;
+        localStorage.setItem('bpyChances', chances);
+        currentPrize = prizes[Math.floor(Math.random() * prizes.length)];
         
-        // 鎖定按鈕，隱藏提示
+        const dial = document.getElementById('dial');
+        const egg = document.getElementById('egg');
+        const tip = document.getElementById('tip');
+        const btn = document.getElementById('draw-btn');
+
         btn.disabled = true;
-        btn.innerText = "扭蛋中... (ドキドキ)";
-        ball.style.display = 'none'; // 先隱藏上次的蛋
-        ball.classList.remove('ballDropAndBounce', 'ballOpen'); 
+        egg.style.display = 'none';
+        egg.classList.remove('egg-fall');
         tip.style.display = 'none';
-
-        // 播移動畫
-        rotor.classList.add('rotorRotate'); // 轉軸旋轉
-        machine.classList.add('machineBounce'); // 機器反彈 (稍後觸發)
-        ball.classList.add('ballDropAndBounce'); // 蛋掉落彈跳 (稍後觸發)
-
-        // 動畫結束後的處理
+        
+        dial.classList.add('dial-spin');
+        
         setTimeout(() => {
-            rotor.classList.remove('rotorRotate');
-            machine.classList.remove('machineBounce');
-            // 蛋停穩後，顯示「點擊開蛋」提示
+            egg.classList.add('egg-fall');
+        }, 800);
+
+        setTimeout(() => {
+            dial.classList.remove('dial-spin');
             tip.style.display = 'block';
-        }, 2200); // 總動畫時間約 2.2 秒
+        }, 2000);
     }
 
-    // 2. 手動開蛋：點擊掉下來的蛋
-    function openBall() {
-        if (!currentPrize) return; // 安全檢查
-
-        const ball = document.getElementById('dropped-ball');
-        const tip = document.getElementById('click-tip');
-        const overlay = document.getElementById('result-overlay');
-        const resText = document.getElementById('result-text');
-
-        // 播放蛋消失動畫
-        ball.classList.add('ballOpen');
+    function openEgg() {
+        if(!currentPrize) return;
+        const egg = document.getElementById('egg');
+        const tip = document.getElementById('tip');
+        
+        // 簡單的點擊放大消失
+        egg.style.transition = '0.3s';
+        egg.style.transform = 'translateY(115px) scale(2)';
+        egg.style.opacity = '0';
         tip.style.display = 'none';
 
-        // 紀錄中獎資訊
         const now = new Date();
-        const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-        history.push({ name: currentPrize.name, time: timeStr });
-        localStorage.setItem('bpyHistory', JSON.stringify(history));
+        const dateStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+        log.push({ name: currentPrize.name, date: dateStr });
+        localStorage.setItem('bpyLog', JSON.stringify(log));
 
-        // 0.5秒後彈出結果視窗
         setTimeout(() => {
-            ball.style.display = 'none'; // 徹底隱藏蛋
-            resText.innerText = "🎊 恭喜獲獎 🎊\n" + currentPrize.name;
-            overlay.classList.add('show');
-            renderHistory();
-        }, 500);
+            document.getElementById('prize-text').innerText = "🎊 恭喜獲獎 🎊\n" + currentPrize.name;
+            document.getElementById('overlay').style.display = 'flex';
+            update();
+        }, 300);
     }
 
-    // 3. 關閉結果視窗，恢復按鈕狀態
-    function closeResult() {
-        const overlay = document.getElementById('result-overlay');
-        overlay.classList.remove('show');
-        currentPrize = null; // 清空暫存
-        updateDisplay(); // 檢查是否還能抽
+    function closeModal() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('egg').style.display = 'none';
+        document.getElementById('egg').style.transform = '';
+        document.getElementById('egg').style.opacity = '1';
     }
 
-    function getPrize() {
-        const totalWeight = prizes.reduce((sum, p) => sum + p.weight, 0);
-        let random = Math.random() * totalWeight;
-        for (const p of prizes) {
-            if (random < p.weight) return p;
-            random -= p.weight;
-        }
-    }
-
-    // 管理員功能不變
-    function adminAddChance() {
-        const password = prompt("請輸入授權碼：");
-        if (password === "8888") {
-            const num = prompt("要增加幾次抽獎機會？", "1");
-            if (num && !isNaN(num)) {
-                currentChances += parseInt(num);
-                localStorage.setItem('bpyChances', currentChances);
-                updateDisplay();
-                alert("已成功增加 " + num + " 次機會！");
-            }
-        } else if (password !== null) {
-            alert("授權碼錯誤");
-        }
-    }
-
-    function clearHistory() {
-        const password = prompt("清除紀錄請輸入授權碼：");
-        if (password === "8888") {
-            history = [];
-            localStorage.removeItem('bpyHistory');
-            renderHistory();
-            alert("紀錄已清除");
-        } else if (password !== null) {
-            alert("授權碼錯誤");
+    function addChance() {
+        if (prompt("授權碼") === "8888") {
+            chances += parseInt(prompt("增加幾次機會？") || 0);
+            localStorage.setItem('bpyChances', chances);
+            update();
         }
     }
 </script>
