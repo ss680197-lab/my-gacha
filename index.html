@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>BPY中壢店-母親節扭蛋機V3</title>
+    <title>BPY中壢店-母親節扭蛋機</title>
     <style>
         :root { --main-pink: #ff8fa3; --dark-pink: #d63384; --bg-pink: #fff0f3; }
         body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background-color: var(--bg-pink); color: #5a5a5a; padding: 15px; margin: 0; }
@@ -16,7 +16,11 @@
         .music-ctrl { position: absolute; top: 15px; right: 20px; font-size: 20px; cursor: pointer; z-index: 100; background: #fff; border-radius: 50%; width: 35px; height: 35px; line-height: 35px; border: 1px solid #ffccd5; display: flex; align-items: center; justify-content: center; }
 
         h1 { color: var(--dark-pink); font-size: 20px; margin: 0 0 10px 0; }
-        .promo-banner { background: #fffafb; border: 1px solid #ffccd5; border-radius: 15px; padding: 10px; margin-bottom: 15px; font-size: 12px; line-height: 1.5; text-align: left; }
+        
+        /* 活動說明看板 - 已更新文字 */
+        .promo-banner { background: #fffafb; border: 1px solid #ffccd5; border-radius: 15px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.6; color: #666; text-align: left; }
+        .promo-banner strong { color: var(--dark-pink); }
+
         .chance-info { font-size: 18px; font-weight: bold; color: var(--dark-pink); margin-bottom: 10px; background: #ffeef2; display: inline-block; padding: 5px 20px; border-radius: 50px; }
 
         .gacha-machine { width: 220px; height: 300px; margin: 0 auto; position: relative; }
@@ -29,8 +33,9 @@
         .dial { width: 60px; height: 60px; background: #fff; border: 5px solid var(--dark-pink); border-radius: 50%; position: absolute; top: 25px; left: 55px; }
         .dial::after { content: ''; width: 40px; height: 10px; background: var(--dark-pink); position: absolute; top: 20px; left: 5px; border-radius: 5px; }
         @keyframes dialSpin { from { transform: rotate(0deg); } to { transform: rotate(1080deg); } }
-        .dial-active { animation: dialSpin 1.2s ease-in-out; }
+        .dial-active { animation: dialSpin 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
 
+        /* 扭蛋球樣式 */
         .real-egg { width: 60px; height: 60px; position: absolute; top: 180px; left: 80px; z-index: 999; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; }
         @keyframes eggFall { 0% { transform: translateY(0); opacity: 0; } 100% { transform: translateY(115px); opacity: 1; } }
         .egg-active { animation: eggFall 0.8s forwards; }
@@ -50,17 +55,21 @@
 <div id="start-overlay" onclick="initApp()">
     <div style="font-size: 60px;">🌸</div>
     <h2 style="margin:10px 0;">點擊進入扭蛋機</h2>
-    <p>啟動音樂與動畫</p>
+    <p>啟動活動音效與動畫</p>
 </div>
 
-<audio id="bgm" loop src="https://www.soundjay.com/free-music/pizzicato-01.mp3"></audio>
-<audio id="sfx-spin" src="https://www.soundjay.com/misc/sounds/mechanical-clanking-1.mp3"></audio>
-<audio id="sfx-pop" src="https://www.soundjay.com/misc/sounds/pop-1.mp3"></audio>
+<audio id="bgm" loop src="https://pixabay.com/music/download/144577/?force=true"></audio>
+<audio id="sfx-spin" src="https://cdn.pixabay.com/audio/2022/03/10/audio_515764d0c9.mp3"></audio>
+<audio id="sfx-pop" src="https://cdn.pixabay.com/audio/2022/03/15/audio_7838cf0722.mp3"></audio>
 
 <div class="container">
     <div id="music-btn" class="music-ctrl" onclick="toggleMusic(event)">🔇</div>
     <h1>BPY中壢母親節扭蛋機</h1>
-    <div class="promo-banner">凡於 5/1-5/31 消費滿 4 萬獲扭蛋機會乙次。</div>
+    
+    <div class="promo-banner">
+        凡於 <strong>5/1-5/31</strong>期間消費金額達 <strong>4 萬</strong>，即可獲得扭蛋機會乙次。金額可累計，8 萬兩次以此類推。
+    </div>
+
     <div class="chance-info">剩餘機會：<span id="chances">0</span> 次</div>
 
     <div class="gacha-machine" id="machine-area">
@@ -107,11 +116,15 @@
     let currentPrize = null;
 
     function initApp() {
-        // 解鎖並播放背景音樂
-        const bgm = document.getElementById('bgm');
-        bgm.play().then(() => {
-            document.getElementById('music-btn').innerText = "🎵";
-        }).catch(()=>{});
+        // 全面初始化音訊
+        const audios = [document.getElementById('bgm'), document.getElementById('sfx-spin'), document.getElementById('sfx-pop')];
+        audios.forEach(a => {
+            a.load(); // 強制重新讀取
+            a.play().then(() => {
+                a.pause();
+                a.currentTime = 0;
+            }).catch(e => console.log("Audio play blocked"));
+        });
         
         document.getElementById('start-overlay').remove();
         updateDisplay();
@@ -122,8 +135,13 @@
         e.stopPropagation();
         const bgm = document.getElementById('bgm');
         const btn = document.getElementById('music-btn');
-        if (bgm.paused) { bgm.play(); btn.innerText = "🎵"; }
-        else { bgm.pause(); btn.innerText = "🔇"; }
+        if (bgm.paused) {
+            bgm.play().catch(e => alert("請先點擊頁面以開啟聲音權限"));
+            btn.innerText = "🎵";
+        } else {
+            bgm.pause();
+            btn.innerText = "🔇";
+        }
     }
 
     function updateDisplay() {
@@ -151,7 +169,6 @@
 
         btn.disabled = true;
         
-        // 播放旋轉音效
         const spinSfx = document.getElementById('sfx-spin');
         spinSfx.currentTime = 0;
         spinSfx.play().catch(()=>{});
@@ -177,7 +194,6 @@
     function openEgg() {
         if (!currentPrize) return;
         
-        // 播放開蛋音效
         const popSfx = document.getElementById('sfx-pop');
         popSfx.currentTime = 0;
         popSfx.play().catch(()=>{});
@@ -195,7 +211,7 @@
             document.getElementById('prize-text').innerText = "🎊 恭喜獲得 🎊\n" + currentPrize.name;
             document.getElementById('overlay').style.display = 'flex';
             
-            // 物理刪除節點
+            // 物理刪除蛋殼節點，絕不殘留
             if(egg) egg.remove();
             
             currentPrize = null;
@@ -209,7 +225,8 @@
     }
 
     function addChances() {
-        if (prompt("核銷碼") === "8888") {
+        const pw = prompt("核銷碼");
+        if (pw === "8888") {
             const val = prompt("增加幾次？", "1");
             if(val) {
                 chances += parseInt(val);
@@ -220,8 +237,9 @@
     }
 
     function clearHistory() {
-        if (prompt("管理碼") === "8888") {
-            if (confirm("確定清空？")) { localStorage.clear(); location.reload(); }
+        const pw = prompt("管理碼");
+        if (pw === "8888") {
+            if (confirm("確定清空紀錄與次數？")) { localStorage.clear(); location.reload(); }
         }
     }
 </script>
