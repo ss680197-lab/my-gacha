@@ -9,7 +9,7 @@
         :root { --main-pink: #ff8fa3; --dark-pink: #d63384; --bg-pink: #fff0f3; }
         body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background-color: var(--bg-pink); color: #5a5a5a; padding: 15px; margin: 0; overflow-x: hidden; }
         
-        /* 啟動遮罩：強制互動以解鎖手機音效 */
+        /* 啟動遮罩 */
         #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--main-pink); color: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
         
         .container { background: #fff; width: 100%; max-width: 420px; padding: 25px; border-radius: 40px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); margin: 0 auto; border: 2px solid #fff; position: relative; }
@@ -19,10 +19,7 @@
         .promo-banner { background: #fffafb; border: 1px solid #ffccd5; border-radius: 15px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.6; color: #666; text-align: left; }
         .chance-info { font-size: 18px; font-weight: bold; color: var(--dark-pink); margin-bottom: 10px; background: #ffeef2; display: inline-block; padding: 5px 20px; border-radius: 50px; }
 
-        /* 扭蛋機視覺區 */
         .gacha-machine { width: 220px; height: 300px; margin: 0 auto; position: relative; }
-        
-        /* 強化版圓框櫥窗 */
         .glass-dome { 
             width: 180px; height: 180px; 
             background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.8) 0%, rgba(224, 247, 250, 0.3) 40%, rgba(128, 222, 234, 0.2) 100%);
@@ -42,7 +39,6 @@
         @keyframes dialSpin { from { transform: rotate(0deg); } to { transform: rotate(1080deg); } }
         .dial-active { animation: dialSpin 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
 
-        /* 扭蛋球產生區 (完全與按鈕層級分離) */
         #egg-drop-zone { position: absolute; width: 100%; height: 100%; top: 0; left: 0; z-index: 90; pointer-events: none; }
         .real-egg { width: 60px; height: 60px; position: absolute; top: 180px; left: 80px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
         @keyframes eggFall { 0% { transform: translateY(0); opacity: 0; } 100% { transform: translateY(115px); opacity: 1; } }
@@ -64,7 +60,6 @@
 <div id="start-overlay" onclick="initApp()">
     <div style="font-size: 60px; margin-bottom: 10px;">🌸</div>
     <h2>點擊開啟扭蛋機</h2>
-    <p>啟動活動音效與動畫</p>
 </div>
 
 <audio id="bgm" loop src="https://cdn.pixabay.com/audio/2022/02/22/audio_d0c6ff1adb.mp3"></audio>
@@ -96,10 +91,10 @@
         <h3 style="margin:0 0 5px 0; color:var(--dark-pink); font-size:13px;">活動獎項清單</h3>
         <ol style="padding-left:15px; margin:0;">
             <li>單堂 $2500 皮拉提斯課程折抵券 (不限本人)</li>
-            <li>Indiba 體驗卷 15 分鐘 (限本人)</li>
+            <li>Indiba 體驗券 15 分鐘 (限本人)</li>
             <li>當次購課折抵單堂金額 50 元</li>
-            <li>單堂 $2500 皮拉提斯課程折抵券兩張 (不限本人)</li>
-            <li>當下加贈四堂皮拉提斯課程 (限本人)</li>
+            <li>Indiba 體驗券 1 小時 (限本人)</li>
+            <li>贈四堂皮拉提斯課程 (限本人)</li>
         </ol>
     </div>
 
@@ -117,12 +112,12 @@
 </div>
 
 <script>
-    const prizes = [
-        { name: "單堂 $2500 皮拉提斯課程折抵券乙張\n(不限本人使用)", w: 24.5 },
-        { name: "Indiba 體驗卷 15 分鐘乙張\n(限本人使用)", w: 24.5 },
-        { name: "當次購課折抵單堂金額 50 元", w: 24.5 },
-        { name: "單堂 $2500 皮拉提斯課程折抵券兩張\n(不限本人使用)", w: 24.5 },
-        { name: "當下加贈四堂皮拉提斯課程\n(限本人使用)", w: 2 }
+    const prizeNames = [
+        "單堂 $2500 皮拉提斯課程折抵券乙張\n(不限本人使用)",
+        "Indiba 體驗卷 15 分鐘乙張\n(限本人使用)",
+        "當次購課折抵單堂金額 50 元",
+        "Indiba體驗券1小時\n(限本人使用)",
+        "贈四堂皮拉提斯課程\n(限本人使用)"
     ];
 
     let chances = parseInt(localStorage.getItem('bpyChances')) || 0;
@@ -132,8 +127,17 @@
 
     function initApp() {
         const bgm = document.getElementById('bgm');
-        bgm.play().then(() => { document.getElementById('music-btn').innerText = "🎵"; }).catch(()=>{});
+        const sfxSpin = document.getElementById('sfx-spin');
+        const sfxPop = document.getElementById('sfx-pop');
+
+        [bgm, sfxSpin, sfxPop].forEach(audio => {
+            audio.play().then(() => {
+                if(audio.id !== 'bgm') { audio.pause(); audio.currentTime = 0; }
+            }).catch(()=>{});
+        });
+
         document.getElementById('start-overlay').remove();
+        document.getElementById('music-btn').innerText = "🎵";
         updateDisplay();
         updateHistory();
     }
@@ -141,7 +145,9 @@
     function toggleMusic(e) {
         e.stopPropagation();
         const bgm = document.getElementById('bgm');
-        document.getElementById('music-btn').innerText = bgm.paused ? (bgm.play(), "🎵") : (bgm.pause(), "🔇");
+        const btn = document.getElementById('music-btn');
+        if (bgm.paused) { bgm.play(); btn.innerText = "🎵"; }
+        else { bgm.pause(); btn.innerText = "🔇"; }
     }
 
     function updateDisplay() {
@@ -151,18 +157,31 @@
 
     function updateHistory() {
         const list = document.getElementById('history-list');
-        list.innerHTML = log.length ? log.slice().reverse().map(i => `<div>${i.time} - ${(i.name || i.n || "").replace('\n', '')}</div>`).join('') : "尚未有中獎紀錄";
+        list.innerHTML = log.length ? log.slice().reverse().map(i => `<div>${i.time} - ${(i.name || "").replace('\n', ' ')}</div>`).join('') : "尚未有中獎紀錄";
+    }
+
+    function getWeightsByChances(c) {
+        if (c === 1) return [35, 20, 30, 10, 5];
+        if (c === 2) return [25, 25, 31, 12, 7];
+        return [25, 25, 31, 10, 9];
     }
 
     function draw() {
         if (chances <= 0 || isAnimating) return;
+        
+        const weights = getWeightsByChances(chances);
         isAnimating = true;
         chances--;
         localStorage.setItem('bpyChances', chances);
         
-        const totalW = prizes.reduce((s, p) => s + p.w, 0);
+        const totalW = weights.reduce((s, w) => s + w, 0);
         let ran = Math.random() * totalW;
-        for (const p of prizes) { if (ran < p.w) { currentPrize = p; break; } ran -= p.w; }
+        let selectedIndex = 0;
+        for (let i = 0; i < weights.length; i++) {
+            if (ran < weights[i]) { selectedIndex = i; break; }
+            ran -= weights[i];
+        }
+        currentPrize = prizeNames[selectedIndex];
 
         const dial = document.getElementById('dial');
         const decos = document.querySelectorAll('.deco-egg');
@@ -176,12 +195,7 @@
         setTimeout(() => {
             dial.classList.remove('dial-active');
             decos.forEach(d => d.classList.remove('shuffling'));
-            
-            // 物理產生蛋球
-            const zone = document.getElementById('egg-drop-zone');
-            zone.innerHTML = '<div id="active-egg" class="real-egg egg-active"></div>';
-            
-            // 蛋掉下後 0.8s 自動啟動開蛋
+            document.getElementById('egg-drop-zone').innerHTML = '<div id="active-egg" class="real-egg egg-active"></div>';
             setTimeout(() => { autoOpenEgg(); }, 800);
         }, 1200);
         updateDisplay();
@@ -198,16 +212,14 @@
         egg.style.opacity = '0';
 
         const now = new Date();
-        log.push({ name: currentPrize.name, time: `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}` });
+        const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+        log.push({ name: currentPrize, time: timeStr });
         localStorage.setItem('bpyLog', JSON.stringify(log));
 
         setTimeout(() => {
-            document.getElementById('prize-text').innerText = "🎊 恭喜獲得 🎊\n" + currentPrize.name;
+            document.getElementById('prize-text').innerText = "🎊 恭喜獲得 🎊\n" + currentPrize;
             document.getElementById('overlay').style.display = 'flex';
-            
-            // --- 核心暴力清空：清空容器，絕不殘留 ---
             document.getElementById('egg-drop-zone').innerHTML = '';
-            
             isAnimating = false;
             currentPrize = null;
             updateDisplay();
@@ -226,7 +238,7 @@
 
     function clearHistory() {
         if (prompt("管理碼") === "8888") {
-            if (confirm("確定清空？")) { localStorage.clear(); location.reload(); }
+            if (confirm("確定清空紀錄？")) { localStorage.clear(); location.reload(); }
         }
     }
 </script>
