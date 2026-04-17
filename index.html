@@ -2,8 +2,9 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>BPY中壢母親節扭蛋機-Vfinal</title>
+    <title>BPY中壢店-母親節扭蛋機V3</title>
     <style>
         :root { --main-pink: #ff8fa3; --dark-pink: #d63384; --bg-pink: #fff0f3; }
         body { font-family: "Microsoft JhengHei", sans-serif; text-align: center; background-color: var(--bg-pink); color: #5a5a5a; padding: 15px; margin: 0; }
@@ -18,7 +19,6 @@
         .promo-banner { background: #fffafb; border: 1px solid #ffccd5; border-radius: 15px; padding: 10px; margin-bottom: 15px; font-size: 12px; line-height: 1.5; text-align: left; }
         .chance-info { font-size: 18px; font-weight: bold; color: var(--dark-pink); margin-bottom: 10px; background: #ffeef2; display: inline-block; padding: 5px 20px; border-radius: 50px; }
 
-        /* 扭蛋機動畫區 */
         .gacha-machine { width: 220px; height: 300px; margin: 0 auto; position: relative; }
         .glass-dome { width: 180px; height: 180px; background: rgba(224, 247, 250, 0.4); border: 4px solid #f9f9f9; border-radius: 50%; position: absolute; top: 0; left: 20px; z-index: 5; overflow: hidden; }
         .deco-egg { width: 32px; height: 32px; border-radius: 50%; position: absolute; }
@@ -29,12 +29,11 @@
         .dial { width: 60px; height: 60px; background: #fff; border: 5px solid var(--dark-pink); border-radius: 50%; position: absolute; top: 25px; left: 55px; }
         .dial::after { content: ''; width: 40px; height: 10px; background: var(--dark-pink); position: absolute; top: 20px; left: 5px; border-radius: 5px; }
         @keyframes dialSpin { from { transform: rotate(0deg); } to { transform: rotate(1080deg); } }
-        .dial-active { animation: dialSpin 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
+        .dial-active { animation: dialSpin 1.2s ease-in-out; }
 
-        /* 扭蛋球 */
-        .real-egg { width: 60px; height: 60px; position: absolute; top: 180px; left: 80px; z-index: 999; display: none; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; }
+        .real-egg { width: 60px; height: 60px; position: absolute; top: 180px; left: 80px; z-index: 999; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #ffccd5, #ff8fa3); box-shadow: 0 8px 20px rgba(0,0,0,0.3); cursor: pointer; }
         @keyframes eggFall { 0% { transform: translateY(0); opacity: 0; } 100% { transform: translateY(115px); opacity: 1; } }
-        .egg-active { display: block !important; animation: eggFall 0.8s forwards; }
+        .egg-active { animation: eggFall 0.8s forwards; }
         
         .btn-draw { background: linear-gradient(#ff8fa3, #d63384); color: white; border: none; width: 100%; padding: 15px; border-radius: 30px; font-size: 18px; font-weight: bold; margin-top: 10px; cursor: pointer; border-bottom: 5px solid #b32161; }
         .btn-draw:disabled { background: #eee; color: #aaa; border-bottom: none; }
@@ -74,7 +73,7 @@
             <div id="dial" class="dial"></div>
             <div style="width:70px; height:40px; background:#333; position:absolute; bottom:-5px; left:50px; border-radius:10px 10px 0 0;"></div>
         </div>
-        </div>
+    </div>
 
     <button id="draw-btn" class="btn-draw" onclick="draw()">開始扭蛋</button>
 
@@ -108,11 +107,13 @@
     let currentPrize = null;
 
     function initApp() {
-        // 強制解鎖音訊
-        [document.getElementById('bgm'), document.getElementById('sfx-spin'), document.getElementById('sfx-pop')].forEach(a => {
-            a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(()=>{});
-        });
-        document.getElementById('start-overlay').remove(); // 徹底移除遮罩
+        // 解鎖並播放背景音樂
+        const bgm = document.getElementById('bgm');
+        bgm.play().then(() => {
+            document.getElementById('music-btn').innerText = "🎵";
+        }).catch(()=>{});
+        
+        document.getElementById('start-overlay').remove();
         updateDisplay();
         updateHistory();
     }
@@ -120,7 +121,9 @@
     function toggleMusic(e) {
         e.stopPropagation();
         const bgm = document.getElementById('bgm');
-        document.getElementById('music-btn').innerText = bgm.paused ? (bgm.play(), "🎵") : (bgm.pause(), "🔇");
+        const btn = document.getElementById('music-btn');
+        if (bgm.paused) { bgm.play(); btn.innerText = "🎵"; }
+        else { bgm.pause(); btn.innerText = "🔇"; }
     }
 
     function updateDisplay() {
@@ -147,7 +150,12 @@
         const btn = document.getElementById('draw-btn');
 
         btn.disabled = true;
-        document.getElementById('sfx-spin').play();
+        
+        // 播放旋轉音效
+        const spinSfx = document.getElementById('sfx-spin');
+        spinSfx.currentTime = 0;
+        spinSfx.play().catch(()=>{});
+
         dial.classList.add('dial-active');
         decos.forEach(d => d.classList.add('shuffling'));
 
@@ -155,7 +163,7 @@
             dial.classList.remove('dial-active');
             decos.forEach(d => d.classList.remove('shuffling'));
             
-            // 這裡動態生成蛋，確保它是全新的
+            // 物理生成新蛋
             const egg = document.createElement('div');
             egg.id = "active-egg";
             egg.className = "real-egg egg-active";
@@ -168,9 +176,13 @@
 
     function openEgg() {
         if (!currentPrize) return;
-        document.getElementById('sfx-pop').play();
-        const egg = document.getElementById('active-egg');
         
+        // 播放開蛋音效
+        const popSfx = document.getElementById('sfx-pop');
+        popSfx.currentTime = 0;
+        popSfx.play().catch(()=>{});
+
+        const egg = document.getElementById('active-egg');
         egg.style.transition = '0.3s';
         egg.style.transform = 'translateY(115px) scale(2)';
         egg.style.opacity = '0';
@@ -183,7 +195,7 @@
             document.getElementById('prize-text').innerText = "🎊 恭喜獲得 🎊\n" + currentPrize.name;
             document.getElementById('overlay').style.display = 'flex';
             
-            // 重點：徹底移除蛋殼元素，保證不擋路
+            // 物理刪除節點
             if(egg) egg.remove();
             
             currentPrize = null;
@@ -198,9 +210,12 @@
 
     function addChances() {
         if (prompt("核銷碼") === "8888") {
-            chances += parseInt(prompt("增加幾次？", "1") || 0);
-            localStorage.setItem('bpyChances', chances);
-            updateDisplay();
+            const val = prompt("增加幾次？", "1");
+            if(val) {
+                chances += parseInt(val);
+                localStorage.setItem('bpyChances', chances);
+                updateDisplay();
+            }
         }
     }
 
